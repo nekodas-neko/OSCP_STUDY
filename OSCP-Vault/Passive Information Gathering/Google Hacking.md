@@ -113,3 +113,15 @@ These basic examples only scratch the surface of what we can do with search oper
 > 
 > ‘Fgure 4: Using Google to Find Directory Listings
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Open-Source Code]]
+- [[Shodan]]
+- [[WHOIS Enumeration]]
+- [[LLM-Powered Passive Information Gathering]]
+
+> [!info] Navigation
+> Section: [[Passive Information Gathering/_index|Passive Information Gathering]] · Home: [[🏠 Home]]
+

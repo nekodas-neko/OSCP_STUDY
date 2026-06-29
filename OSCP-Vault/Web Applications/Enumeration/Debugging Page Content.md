@@ -86,3 +86,14 @@ We can also use the Inspector tool to drill down into specific page content. Let
 > This tool can be especially useful for quickly finding hidden form fields in the HTML
 > source.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Inspecting HTTP Response Headers and Sitemaps]]
+- [[Technology Stack Identification with Wappalyzer]]
+- [[JavaScript Refresher]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Enumeration/_index|Enumeration]] · Home: [[🏠 Home]]
+

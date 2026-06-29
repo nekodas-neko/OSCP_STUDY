@@ -258,3 +258,13 @@ Follow the steps above on VM #1 to overwrite the authorized_keys file with the f
 > to upload executable files, we'll need to get creative to find other vectors we can
 > leverage.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Using executable files]]
+- [[Local file inclusion (LFI)]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/File Upload Vulnerabilities/_index|File Upload Vulnerabilities]] · Home: [[🏠 Home]]
+

@@ -436,3 +436,14 @@ The nslookup utility is as versatile as the Linux host command and the queries c
 ```sh
 > nslookup -type=TXT info.megacorptwo.com 192.168.50.151
 ```
+
+---
+%% graph-links %%
+## Related
+- [[WHOIS Enumeration]]
+- [[SMB Enumeration]]
+- [[Nmap Scripting Engine (NSE)]]
+
+> [!info] Navigation
+> Section: [[Active Information Gathering/_index|Active Information Gathering]] · Home: [[🏠 Home]]
+

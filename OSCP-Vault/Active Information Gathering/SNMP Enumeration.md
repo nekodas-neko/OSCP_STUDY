@@ -308,3 +308,14 @@ snmpwalk -c public -v1 192.168.50.151 1.3.6.1.2.1.25.6.3.1.2
 ```sh
 snmpwalk -c public -v1 192.168.50.151 1.3.6.1.2.1.6.13.1.3
 ```
+
+---
+%% graph-links %%
+## Related
+- [[SMB Enumeration]]
+- [[SMTP Enumeration]]
+- [[DNS Enumeration]]
+
+> [!info] Navigation
+> Section: [[Active Information Gathering/_index|Active Information Gathering]] · Home: [[🏠 Home]]
+

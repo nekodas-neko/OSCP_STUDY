@@ -1,4 +1,22 @@
 # Cross-Site Scripting
+%% moc %%
+> [!abstract] Map of Content
+> Theory → identify → basic payloads → privesc via XSS.
+> 
+> ⬆ Up: [[Web Applications/_index|Web Applications]]
+
+## Notes
+- [[Basic XSS]]
+- [[Identifying XSS Vulnerabilities]]
+- [[JavaScript Refresher]]
+- [[Privilege Escalation via XSS]]
+- [[Stored vs Reflected XSS Theory]]
+
+## Related Sections
+- [[Web Applications/Common Web Application Attacks/_index|Common Web Application Attacks]]
+- [[Web Applications/_index|Web Applications]]
+
+---
 
 > [!tip] Quick Reference — XSS
 > | Type | Payload |

@@ -630,3 +630,13 @@ Quick Attack Flow:
 7. Extract flag ✅
 
 --------------------------------------------------
+
+---
+%% graph-links %%
+## Related
+- [[Manual code execution]]
+- [[Automating the attack]]
+
+> [!info] Navigation
+> Section: [[SQL Injection Attacks/Manual and automated code execution/_index|Manual and automated code execution]] · Home: [[🏠 Home]]
+

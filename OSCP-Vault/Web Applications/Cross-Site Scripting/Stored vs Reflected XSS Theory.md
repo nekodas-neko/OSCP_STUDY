@@ -61,3 +61,14 @@ Either of these two vulnerability variants can manifest as client- (browser) or 
 DOM-based XSS takes place solely within the page's Document Object Model (DOM). While we won't cover too much detail for now, we should know that browsers parse a page's HTML content and then generate an internal DOM representation. This type of XSS occurs when a page's DOM is modified with user-controlled values. DOM-based XSS can be stored or reflected; the key distinction is that DOM-based XSS attacks occur when a browser parses the page's content and inserted JavaScript is executed.
 
 No matter how the XSS payload is delivered and executed, the injected scripts run under the context of the user visiting the affected page. This means that the user's browser, not the web application, executes the XSS payload. These attacks can be nevertheless significant, with impacts including session hijacking, forced redirection to malicious pages, execution of local applications as that user, or even trojanized web applications. In the following sections, we will explore some of these attacks.
+
+---
+%% graph-links %%
+## Related
+- [[Identifying XSS Vulnerabilities]]
+- [[Basic XSS]]
+- [[JavaScript Refresher]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Cross-Site Scripting/_index|Cross-Site Scripting]] · Home: [[🏠 Home]]
+

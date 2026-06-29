@@ -83,3 +83,13 @@ Test-NetConnection -Port 445 192.168.50.151
 ```sh
 1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.50.151", $_)) "TCP port $_ is open"} 2>$null
 ```
+
+---
+%% graph-links %%
+## Related
+- [[TCPUDP Port Scanning Theory]]
+- [[Nmap Scripting Engine (NSE)]]
+
+> [!info] Navigation
+> Section: [[Active Information Gathering/Port Scanning with Nmap/_index|Port Scanning with Nmap]] · Home: [[🏠 Home]]
+

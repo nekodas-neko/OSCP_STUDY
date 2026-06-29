@@ -488,3 +488,14 @@ curl -d '{"password":"pwned","username":"admin"}' -H 'Content-Type: application/
 > From Burp's Site map, we can track the API we discovered and forward any saved
 > request to the Repeater or Intruder for further testing.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Security Testing with Burp Suite]]
+- [[Open-Source Code]]
+- [[Command Injection]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Enumeration/_index|Enumeration]] · Home: [[🏠 Home]]
+

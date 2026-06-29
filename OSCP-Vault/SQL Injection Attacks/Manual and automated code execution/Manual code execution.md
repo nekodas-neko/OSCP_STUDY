@@ -153,3 +153,14 @@ The PHP system function will parse any statement included in the cmd parameter c
 > Now that we understand how to leverage SQLi to manually obtain command
 > execution, let's discover how to automate the process with specific tools.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Automating the attack]]
+- [[UNION-based payloads]]
+- [[Command Injection]]
+
+> [!info] Navigation
+> Section: [[SQL Injection Attacks/Manual and automated code execution/_index|Manual and automated code execution]] · Home: [[🏠 Home]]
+

@@ -307,3 +307,13 @@ y
 pwd
 y
 ```
+
+---
+%% graph-links %%
+## Related
+- [[Manual code execution]]
+- [[Blind SQL injections]]
+
+> [!info] Navigation
+> Section: [[SQL Injection Attacks/Manual and automated code execution/_index|Manual and automated code execution]] · Home: [[🏠 Home]]
+

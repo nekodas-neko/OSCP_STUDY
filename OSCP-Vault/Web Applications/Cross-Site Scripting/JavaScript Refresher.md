@@ -85,3 +85,14 @@ Once the blank page is loaded, we'll click on the Web Console from the Web Devel
 > Figure 25: Testing the JavaScript Function in the Browser Console
 > From within the Console, we can execute our test function and retrieve the output.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Stored vs Reflected XSS Theory]]
+- [[Basic XSS]]
+- [[Debugging Page Content]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Cross-Site Scripting/_index|Cross-Site Scripting]] · Home: [[🏠 Home]]
+

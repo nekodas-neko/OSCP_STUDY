@@ -6,6 +6,21 @@ tags:
 ---
 
 # Port Scanning with Nmap
+%% moc %%
+> [!abstract] Map of Content
+> Find open ports → version-scan → hand off to per-service enumeration.
+> 
+> ⬆ Up: [[Active Information Gathering/_index|Active Information Gathering]]
+
+## Notes
+- [[Nmap Scripting Engine (NSE)]]
+- [[Window Test-NetConnection]]
+
+## Related Sections
+- [[Active Information Gathering/_index|Active Information Gathering]]
+- [[Vulnerability Scanning/_index|Vulnerability Scanning]]
+
+---
 
 > [!tip] Quick Reference — Nmap
 > | Goal | Command |
