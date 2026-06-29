@@ -12,6 +12,17 @@ tags:
 > [!abstract] What this is
 > The errors beginners hit most, what they actually mean, and the fix. When something "doesn't work", search this page first (Ctrl/Cmd+F).
 
+```mermaid
+flowchart TD
+    A["Something failed"] --> B{Where?}
+    B -->|Cannot reach host| C["Networking<br/>VPN / ping / -Pn"]
+    B -->|Scan errors| D["Nmap<br/>sudo / -Pn / min-rate"]
+    B -->|Share / login| E["SMB<br/>null session / SMBv1"]
+    B -->|Web / brute force| F["gobuster<br/>wordlist / status filter"]
+    B -->|Shell issues| G["Shells<br/>listener / LHOST / TTY"]
+    B -->|Cannot download| H["File transfer<br/>curl / chmod / writable dir"]
+```
+
 ---
 
 ## 🌐 Networking / connection

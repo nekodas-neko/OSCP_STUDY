@@ -11,6 +11,7 @@ tags:
 > - 🧰 [[🧰 Command Cheat Sheet]] — copy-paste commands
 > - 🔣 [[🔣 Encoding Reference]] — URL encoding & filter bypasses
 > - ⚠️ [[⚠️ Common Errors & Troubleshooting]] — errors and fixes
+> - 🧱 [[Vault Conventions]] — the format standard + how to add a section
 
 ## Attack Phases
 
@@ -21,14 +22,24 @@ tags:
 | 🔎 Vuln Scan | [[Vulnerability Scanning/_index\|Nessus / Nmap]] |
 | 📝 Report | [[Report Writing]] |
 
-## Attack Flow
+## Attack Flow (master map)
 
+```mermaid
+flowchart TD
+    A[🎯 Target] --> B[🔍 Passive Recon<br/>OSINT]
+    B --> C[📡 Active Recon<br/>port scan + service enum]
+    C --> D[🔎 Vuln Scan<br/>Nessus + NSE]
+    D --> E[💥 Exploitation<br/>Web / SQLi / service]
+    E --> F[🐚 Foothold<br/>reverse shell]
+    F --> G[⬆️ Privilege Escalation]
+    G --> H[🔁 Post-Exploit / Pivot]
+    H --> I[🏁 Flags + 📝 Report]
+
+    classDef todo fill:#3a2f1a,stroke:#c79a3a,color:#e8c97a,stroke-dasharray: 4 3;
+    class G,H todo;
 ```
-Passive Recon → Active Recon → Vuln Scan → Web / SQLi Exploitation → (PrivEsc*)
-   OSINT          port scan       Nessus        get a shell           *to add
-                  + service       + NSE
-                  enum
-```
+
+> [!info] Dashed/gold nodes = sections still to be added (PrivEsc, Post-Exploit/Pivot). They'll slot straight into this flow as you write them.
 
 > [!tip] Using the graph
 > - **Local Graph** (right sidebar → ⋮ → *Open local graph*) shows just the current note's neighbours — the fastest way to follow an attack chain.

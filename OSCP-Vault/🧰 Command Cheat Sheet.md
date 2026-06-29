@@ -16,6 +16,15 @@ tags:
 > export LPORT=4444            # your listener port
 > ```
 
+```mermaid
+flowchart LR
+    S1["1. Scan & Enum"] --> S2["2. Reverse Shells"]
+    S2 --> S3["3. Payloads<br/>msfvenom"]
+    S3 --> S4["4. File Transfer"]
+    S4 --> S5["5. PrivEsc"]
+    S5 --> S6["6. Password Attacks"]
+```
+
 ---
 
 ## 🔍 1. Scanning & Enumeration
