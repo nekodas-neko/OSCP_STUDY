@@ -31,3 +31,14 @@ This quick external analysis reveals information about the OS, UI framework, web
 > JavaScript libraries
 > © jQuery @™ prettyPhoto
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[FingerPrinting with Nmap]]
+- [[Debugging Page Content]]
+- [[Inspecting HTTP Response Headers and Sitemaps]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Application Assesment Tools/_index|Application Assesment Tools]] · Home: [[🏠 Home]]
+

@@ -123,3 +123,13 @@
 > 
 > Listing 4 - Adding more "./ to the relative path
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Identifying and exploiting directory traversals]]
+- [[Encoding special characters]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/Directory Traversal/_index|Directory Traversal]] · Home: [[🏠 Home]]
+

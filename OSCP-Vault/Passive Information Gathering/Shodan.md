@@ -49,3 +49,15 @@ We can review the ports, services, and technologies used by the server on this p
 > 40 5624487 aS lie AS od —
 > ‘Figure 14: Shodan Host Summary
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[WHOIS Enumeration]]
+- [[Netcraft]]
+- [[Google Hacking]]
+- [[Nessus]]
+
+> [!info] Navigation
+> Section: [[Passive Information Gathering/_index|Passive Information Gathering]] · Home: [[🏠 Home]]
+

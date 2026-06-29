@@ -48,3 +48,14 @@ and check the results.
 > mode and the SHA1 algorithm. We can use these findings to gain insights about the
 > security practices, or lack thereof, within the target organization.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Netcraft]]
+- [[Inspecting HTTP Response Headers and Sitemaps]]
+- [[Technology Stack Identification with Wappalyzer]]
+
+> [!info] Navigation
+> Section: [[Passive Information Gathering/_index|Passive Information Gathering]] · Home: [[🏠 Home]]
+

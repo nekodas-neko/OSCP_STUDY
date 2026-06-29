@@ -116,3 +116,13 @@ The -w wordlist.txt argument will allow us to supply the custom LLM-generated wo
 ```sh
 gobuster dns -d megacorpone.com -w wordlist.txt -t 10
 ```
+
+---
+%% graph-links %%
+## Related
+- [[LLM-Powered Passive Information Gathering]]
+- [[Nmap Scripting Engine (NSE)]]
+
+> [!info] Navigation
+> Section: [[Active Information Gathering/_index|Active Information Gathering]] · Home: [[🏠 Home]]
+

@@ -281,3 +281,13 @@ A method of triggering the vulnerability
 ## Appendices, Further Information, and References:
 
 The final part of the report is the Appendices section. Things that go here typically do not fit anywhere else in the report or are too lengthy or detailed to include inline. This includes long lists of compromised users or affected areas, large proof-of-concept code blocks, expanded methodology or technical write-ups, etc. A good rule to follow is if it's necessary for the report but would break the flow of the page, put it in an appendix.
+
+---
+%% graph-links %%
+## Related
+- [[Security Testing with Burp Suite]]
+- [[NMAP]]
+
+> [!info] Navigation
+> Section: [[🏠 Home]] · Home: [[🏠 Home]]
+

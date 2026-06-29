@@ -88,3 +88,14 @@ This manual approach will work best on small repos. For larger repos, we can use
 > 2
 > Figure 1: Example Gitleaks Output
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Google Hacking]]
+- [[Enumerating and Abusing APIs]]
+- [[Shodan]]
+
+> [!info] Navigation
+> Section: [[Passive Information Gathering/_index|Passive Information Gathering]] · Home: [[🏠 Home]]
+

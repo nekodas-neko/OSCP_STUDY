@@ -653,3 +653,15 @@ cat /usr/share/wordlists/rockyou.txt | head
 > If we set Firefox to use Burp as a proxy, and we close Burp, Firefox won't work
 > correctly.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Directory Brute Force with Gobuster]]
+- [[Enumerating and Abusing APIs]]
+- [[Identifying XSS Vulnerabilities]]
+- [[UNION-based payloads]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Application Assesment Tools/_index|Application Assesment Tools]] · Home: [[🏠 Home]]
+

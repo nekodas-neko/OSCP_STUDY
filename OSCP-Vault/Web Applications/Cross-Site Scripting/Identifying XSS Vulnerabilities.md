@@ -78,3 +78,14 @@ We may need to use different sets of characters, depending on where our input is
 ```sh
 < > ' " { } ;
 ```
+
+---
+%% graph-links %%
+## Related
+- [[Stored vs Reflected XSS Theory]]
+- [[Basic XSS]]
+- [[Security Testing with Burp Suite]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Cross-Site Scripting/_index|Cross-Site Scripting]] · Home: [[🏠 Home]]
+

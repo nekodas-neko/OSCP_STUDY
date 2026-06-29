@@ -15,6 +15,20 @@ tags:
 | 🔎 Vuln Scan | [[Vulnerability Scanning/_index\|Nessus / Nmap]] |
 | 📝 Report | [[Report Writing]] |
 
+## Attack Flow
+
+```
+Passive Recon → Active Recon → Vuln Scan → Web / SQLi Exploitation → (PrivEsc*)
+   OSINT          port scan       Nessus        get a shell           *to add
+                  + service       + NSE
+                  enum
+```
+
+> [!tip] Using the graph
+> - **Local Graph** (right sidebar → ⋮ → *Open local graph*) shows just the current note's neighbours — the fastest way to follow an attack chain.
+> - Each section's `_index` is a **Map of Content (MOC)** — open one to see everything in that phase and where it connects.
+> - Every note has a **Related** section at the bottom and a backlink to its MOC, so the global Graph View now forms real clusters per phase.
+
 ## Most-Used Quick Refs
 
 - [[Active Information Gathering/Port Scanning with Nmap/_index|Nmap]]

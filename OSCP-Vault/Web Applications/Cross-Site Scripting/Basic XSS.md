@@ -216,3 +216,14 @@ Excellent. We have injected an XSS payload into the web application's database a
 > °
 > Figure 28: Demonstrating the XSS vulnerability
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Identifying XSS Vulnerabilities]]
+- [[Privilege Escalation via XSS]]
+- [[Stored vs Reflected XSS Theory]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Cross-Site Scripting/_index|Cross-Site Scripting]] · Home: [[🏠 Home]]
+

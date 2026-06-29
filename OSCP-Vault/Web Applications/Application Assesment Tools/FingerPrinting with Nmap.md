@@ -61,3 +61,14 @@ sudo nmap -p80  -sV 192.168.50.20
 ```sh
 sudo nmap -p80 --script=http-enum 192.168.50.20
 ```
+
+---
+%% graph-links %%
+## Related
+- [[Technology Stack Identification with Wappalyzer]]
+- [[Nmap Scripting Engine (NSE)]]
+- [[NMAP]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Application Assesment Tools/_index|Application Assesment Tools]] · Home: [[🏠 Home]]
+

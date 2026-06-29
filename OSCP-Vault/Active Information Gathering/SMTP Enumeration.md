@@ -206,3 +206,14 @@ dism /online /Enable-Feature /FeatureName:TelnetClient
 ```sh
 telnet 192.168.50.8 25
 ```
+
+---
+%% graph-links %%
+## Related
+- [[SMB Enumeration]]
+- [[SNMP Enumeration]]
+- [[DNS Enumeration]]
+
+> [!info] Navigation
+> Section: [[Active Information Gathering/_index|Active Information Gathering]] · Home: [[🏠 Home]]
+

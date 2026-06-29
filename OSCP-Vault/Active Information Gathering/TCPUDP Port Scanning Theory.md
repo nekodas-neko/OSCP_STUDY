@@ -99,3 +99,14 @@ nc -nv -u -z -w 1 192.168.50.149 120-123
 > unreachable (as shown in packets 5, 7, and 9), sent by the UDP/IP stack of the target
 > machine.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Nmap Scripting Engine (NSE)]]
+- [[Window Test-NetConnection]]
+- [[NMAP]]
+
+> [!info] Navigation
+> Section: [[Active Information Gathering/_index|Active Information Gathering]] · Home: [[🏠 Home]]
+

@@ -8,6 +8,22 @@ tags:
 ---
 
 # File Upload Vulnerabilities
+%% moc %%
+> [!abstract] Map of Content
+> Turn an upload into a shell — executable and non-executable paths.
+> 
+> ⬆ Up: [[Web Applications/Common Web Application Attacks/_index|Common Web Application Attacks]]
+
+## Notes
+- [[Using executable files]]
+- [[Using non-executable files]]
+
+## Related Sections
+- [[Web Applications/Common Web Application Attacks/File Inclusion Vulnerabilities/_index|File Inclusion Vulnerabilities]]
+
+---
+
+# File Upload Vulnerabilities
 
 > [!tip] Quick Reference — File Upload
 > | Bypass | Technique |

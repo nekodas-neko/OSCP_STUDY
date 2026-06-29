@@ -109,3 +109,14 @@ Allow and Disallow directives inform “polite” web crawlers which pages or di
 > Allow: /2h1=
 > Listing 7 - https://www.google.com/robots.txt
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Debugging Page Content]]
+- [[Directory Brute Force with Gobuster]]
+- [[Security Headers and SSLTLS]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Enumeration/_index|Enumeration]] · Home: [[🏠 Home]]
+

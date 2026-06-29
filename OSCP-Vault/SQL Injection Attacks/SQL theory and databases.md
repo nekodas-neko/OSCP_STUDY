@@ -442,3 +442,14 @@ OS{d00bd704b17b3259660c4ed38876da07}
 
 === Final Answer ===
 OS{d00bd704b17b3259660c4ed38876da07}
+
+---
+%% graph-links %%
+## Related
+- [[UNION-based payloads]]
+- [[Identifying SQLi via error-based payloads]]
+- [[Blind SQL injections]]
+
+> [!info] Navigation
+> Section: [[SQL Injection Attacks/_index|SQL Injection Attacks]] · Home: [[🏠 Home]]
+

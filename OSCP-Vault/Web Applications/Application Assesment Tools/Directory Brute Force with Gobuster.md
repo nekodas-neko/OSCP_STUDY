@@ -114,3 +114,14 @@ gobuster dir -u 192.168.165.16 -w /usr/share/wordlists/dirb/common.txt -b 301 -t
 ```sh
 gobuster dir -u 192.168.50.20 -w /usr/share/wordlists/dirb/common.txt -t 5
 ```
+
+---
+%% graph-links %%
+## Related
+- [[Security Testing with Burp Suite]]
+- [[Inspecting HTTP Response Headers and Sitemaps]]
+- [[Local file inclusion (LFI)]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Application Assesment Tools/_index|Application Assesment Tools]] · Home: [[🏠 Home]]
+

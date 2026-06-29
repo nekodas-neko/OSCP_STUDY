@@ -74,3 +74,13 @@
 > %2e%2e]. After the request passes the filter, the web application
 > or server interprets the encoded characters as a valid request.
 > ```
+
+---
+%% graph-links %%
+## Related
+- [[Identifying and exploiting directory traversals]]
+- [[Absolute vs relative paths]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/Directory Traversal/_index|Directory Traversal]] · Home: [[🏠 Home]]
+

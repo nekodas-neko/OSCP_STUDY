@@ -60,3 +60,14 @@ Netcraft is an internet service company based in England offering a free web por
 *** During 2024, Netcraft has decided to discontinue this part of their service. The info to answer the following questions are in the images, or we can visit
 [https://www.wappalyzer.com/lookup/megacorpone.com/](https://www.wappalyzer.com/lookup/megacorpone.com/)
 to find the answers on a live site.
+
+---
+%% graph-links %%
+## Related
+- [[WHOIS Enumeration]]
+- [[Security Headers and SSLTLS]]
+- [[Shodan]]
+
+> [!info] Navigation
+> Section: [[Passive Information Gathering/_index|Passive Information Gathering]] · Home: [[🏠 Home]]
+

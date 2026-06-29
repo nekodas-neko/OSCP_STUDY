@@ -320,3 +320,14 @@ Listing 36 shows us the frameworks and languages for which Kali already offers w
 We should be aware that the file types of our web shells may be blacklisted via a filter or upload mechanism. In situations like this, we can try to bypass the filter as in this section. However, there are other options to consider. Web applications handling and managing files often enable users to rename or modify files. We could abuse this by uploading a file with an innocent file type like .txt, then changing the file back to the original file type of the web shell by renaming it.
 
 http://192.168.152.16/simple-backdoor.phP?cmd=cat%20../../../../../opt/install.txt
+
+---
+%% graph-links %%
+## Related
+- [[Using non-executable files]]
+- [[Command Injection]]
+- [[Remote file inclusion (RFI)]]
+
+> [!info] Navigation
+> Section: [[Web Applications/Common Web Application Attacks/File Upload Vulnerabilities/_index|File Upload Vulnerabilities]] · Home: [[🏠 Home]]
+
