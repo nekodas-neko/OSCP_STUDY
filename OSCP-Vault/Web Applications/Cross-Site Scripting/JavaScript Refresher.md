@@ -38,6 +38,19 @@ User input reflected in page?
     └── Needs victim to click URL — less useful for OSCP unless specifically required
 ```
 
+> [!success] What success looks like
+> You can run a small JS snippet in the browser console (e.g. `console.log(multiplyValues(3,5))` prints `15`). Once you understand that JavaScript can read and change the page's DOM, you can see why injected JS lets an attacker redirect login forms, read passwords, or steal cookies.
+
+> [!danger] Common errors
+> - Typing the function in the console but seeing nothing → make sure you actually call it (e.g. `multiplyValues(3,5)`), not just declare it.
+> - "ReferenceError: x is not defined" → JavaScript is case-sensitive; `multiplyValues` and `multiplyvalues` are different names.
+> - Console looks cluttered with library errors → open `about:blank` first so no site scripts load, then open the Web Console.
+> - When you reuse these concepts in a payload, remember raw `<script>` shown as text means the output was HTML-encoded. See [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> The browser builds a **DOM** (a tree of every element on the page) from the HTML it receives. JavaScript's whole job is to read and change that tree. That is the key insight for XSS: if you can get *your* JavaScript to run on the page, you control the DOM with the same power the site's own scripts have.
+
 ## Resources
 - [HackTricks — XSS](https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting)
 - [PayloadsAllTheThings — XSS](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)

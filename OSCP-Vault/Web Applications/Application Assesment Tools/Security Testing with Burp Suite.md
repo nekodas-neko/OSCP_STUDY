@@ -35,6 +35,36 @@ Set up proxy → Firefox uses 127.0.0.1:8080
         └── Cluster bomb → all combinations (slow)
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Launch Burp: burpsuite] --> B["Set Firefox proxy to 127.0.0.1:8080"]
+    B --> C[Install Burp CA cert for HTTPS]
+    C --> D[Proxy > Intercept ON]
+    D --> E[Browse target / submit login]
+    E --> F[Right-click request > Send to Repeater]
+    F --> G[Repeater: edit + Send, read response]
+    E --> H[Right-click POST > Send to Intruder]
+    H --> I["Positions: mark password field with §§"]
+    I --> J[Payloads: load wordlist > Start Attack]
+    J --> K{Odd status/length?}
+    K -->|"302 vs 200 on one request"| L[Likely the valid password]
+```
+
+> [!success] What success looks like
+> In Intruder, the wrong passwords all return the same `Status 200` / `Length 6462`, but the correct one stands out with a different `Status 302` / `Length 1097`. That outlier is your hit — confirm by logging in.
+
+> [!danger] Common errors
+> - Browser hangs / pages never load → Intercept is ON; click Forward repeatedly or toggle Intercept OFF (Ctrl+T).
+> - HTTPS shows certificate warnings → install Burp's CA cert from `http://burpsuite` (Proxy running) into Firefox.
+> - No traffic in HTTP History → Firefox proxy not set to `127.0.0.1:8080`, or "Use system proxy" still selected.
+> - Closed Burp and Firefox stopped working → the proxy is gone; switch Firefox back to No proxy.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Burp sits **between your browser and the server** as a proxy, so you can pause, read, and change every request. **Repeater** is for hand-editing one request over and over; **Intruder** automates the same edit across a wordlist (e.g. password guessing).
+
 ## Resources
 - [PortSwigger Web Academy](https://portswigger.net/web-security) — free labs
 - [HackTricks — Burp](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/burp-suite)

@@ -50,6 +50,30 @@ We can review the ports, services, and technologies used by the server on this p
 > ‘Figure 14: Shodan Host Summary
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Register free Shodan account] --> B["Search hostname:megacorpone.com"]
+    B --> C[IPs, services, banners listed]
+    C --> D["Filter by Top Ports (e.g. SSH)"]
+    D --> E[Click an IP for host summary]
+    E --> F["Service versions e.g. OpenSSH + known CVEs"]
+    F --> G[Prioritize targets for active testing]
+```
+
+> [!success] What success looks like
+> Shodan lists your target's IPs with open ports, service banners, and software versions (e.g. the exact OpenSSH version), and flags published vulnerabilities for those services — a ready-made map of where to start active testing.
+
+> [!danger] Common errors
+> - Skipping registration → many results and filters need a free account; sign up first.
+> - Searching the wrong filter → use `hostname:megacorpone.com` (not just a bare keyword) to scope results to the target.
+> - Trusting banners as 100% current → Shodan data comes from earlier crawls and can be stale; confirm versions in the active phase.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Shodan is **passive**: it shows data it already crawled from internet-facing devices, so querying it never touches the target. Think of it as a search engine for servers and IoT devices instead of web pages.
+
 ---
 %% graph-links %%
 ## Related

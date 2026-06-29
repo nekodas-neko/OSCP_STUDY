@@ -32,6 +32,31 @@ Firewall dropping packets?
 └── Try -Pn (skip host discovery) and --scan-delay 1s
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["On a Windows host, no Kali/nmap"] --> B{"Check one port?"}
+    B -->|Yes| C["Test-NetConnection -Port 445 IP"]
+    B -->|Scan a range| D["1..1024 | % { TcpClient.Connect(IP,$_) ... }"]
+    C --> E{"TcpTestSucceeded?"}
+    E -->|True| F[🏁 Port open]
+    E -->|False| G[Port closed or filtered]
+    D --> F
+```
+
+> [!success] What success looks like
+> The output ends with `TcpTestSucceeded : True` — that line is the whole point and means the TCP port is open. The 1..1024 one-liner prints `TCP port 88 is open` for each reachable port.
+
+> [!danger] Common errors
+> - `TcpTestSucceeded : False` with a ping reply → the host is up but that specific port is closed/filtered; try another port.
+> - `WARNING: TCP connect ... failed` and it hangs → no route or firewall dropping; this is the normal "closed" case, not a tool bug.
+> - One-liner floods red errors → that is expected for closed ports; the `2>$null` at the end is what suppresses them, so keep it.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> `Test-NetConnection` is the built-in PowerShell way to check a port when you are stuck on a Windows box with no nmap installed. It only checks **one port at a time**, so to scan many ports you fall back to the `TcpClient` one-liner. Always read the final `TcpTestSucceeded` field — ignore the ICMP/ping lines above it.
+
 ## Resources
 - [HackTricks — Nmap](https://book.hacktricks.xyz/generic-methodologies-and-resources/pentesting-network/nmap-cheatsheet)
 - [Nmap NSE scripts list](https://nmap.org/nsedoc/)

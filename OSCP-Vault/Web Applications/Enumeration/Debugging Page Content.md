@@ -87,6 +87,32 @@ We can also use the Inspector tool to drill down into specific page content. Let
 > source.
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Open page in Firefox] --> B[Press F12 / Web Developer menu]
+    B --> C[Debugger tab: view JS sources]
+    C --> D["Click Pretty print { } to un-minify"]
+    D --> E{Clues in the code?}
+    E -->|jQuery 3.6.0, API URLs, comments| F[Note versions + endpoints]
+    B --> G[Inspector tab: right-click element to Inspect]
+    G --> H{Hidden fields / client-side controls?}
+    H -->|hidden input, disabled buttons| I[Tamper later via Burp]
+```
+
+> [!success] What success looks like
+> Pretty-printed source reveals readable JavaScript, library versions (e.g. `jQuery 3.6.0`), HTML comments developers left behind, and hidden `<input type="hidden">` fields the page never shows you. Each is a lead.
+
+> [!danger] Common errors
+> - Code is one unreadable line → it is minified; click the `{ }` Pretty print button in the Debugger.
+> - You only see rendered HTML, not the original → use View Source (Ctrl+U) for the raw server response vs. Inspector for the live DOM.
+> - Dynamic content missing → some HTML is built by JS after load; watch the Debugger/Network while interacting.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **View Source** shows what the server originally sent; the **Inspector** shows the live page after JavaScript changed it. Comparing the two often exposes hidden fields and client-side-only validation you can bypass.
+
 ---
 %% graph-links %%
 ## Related

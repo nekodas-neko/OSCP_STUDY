@@ -41,6 +41,33 @@ User input reflected in page?
     └── Needs victim to click URL — less useful for OSCP unless specifically required
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Find an input field<br/>search box, comment, header] --> B[Submit special characters<br/>angle brackets, quotes, braces, semicolon]
+    B --> C[View the page source / response]
+    C --> D{Characters returned unfiltered?}
+    D -->|Yes, raw| E[Likely vulnerable - build a payload<br/>matched to the output context]
+    D -->|No, encoded or stripped| F[Output sanitized<br/>try a different field or context]
+    E --> G{Where does input land?}
+    G -->|Between HTML tags| H[Need angle brackets - inject a script tag]
+    G -->|Inside a JS block| I[Need quotes and semicolon to break out]
+    G -->|Inside an attribute| J[Need a quote then an event handler]
+```
+
+> [!success] What success looks like
+> The special characters you submitted (`< > ' " { } ;`) come back **unencoded** in the response source. That means the app treats them as code, not text — the first sign you can build a working XSS payload.
+
+> [!danger] Common errors
+> - Your characters appear as `&lt;` / `&gt;` instead of `<` / `>` → the app HTML-encoded them, so they render as text and won't execute. Try another input or context. See [[🔣 Encoding Reference]].
+> - You inject `<script>` between tags but it never fires → check where the input actually lands; inside an existing attribute or JS block you need quotes/semicolons to break out first, not full tags.
+> - You test only in the browser view → always check the raw page source (Ctrl+U) or the Burp response; encoding is easy to miss on the rendered page.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> "Context" just means *where on the page your input ends up*. Between `<div>` tags you can inject your own `<script>` tag; inside an existing `<script>` block you only need a quote and a semicolon to start your own code. The payload you choose must match the context.
+
 ## Resources
 - [HackTricks — XSS](https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting)
 - [PayloadsAllTheThings — XSS](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)

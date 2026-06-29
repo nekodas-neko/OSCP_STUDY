@@ -203,6 +203,30 @@ As we know, passive information gathering involves exploring open-source data fo
 > ‘on the related technology.
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Pick target domain] --> B["Prompt: whois megacorpone.com"]
+    B --> C["Prompt: company structure + employees"]
+    C --> D["Prompt: best 20 Google dorks for target"]
+    D --> E["Prompt: retrieve technology stack"]
+    E --> F[LLM correlates open-source data into patterns]
+    F --> G[Verify findings against real tools]
+```
+
+> [!success] What success looks like
+> The LLM returns organized OSINT it would otherwise take many manual queries to gather: WHOIS details (registrar, dates, name servers), a roster of employees with emails/handles, a themed set of 20 tailored Google dorks, and a categorized technology stack — all from natural-language prompts.
+
+> [!danger] Common errors
+> - Assuming the LLM did a live lookup → tools like ChatGPT often do NOT query the internet by default; they may simulate results from training data, which can be outdated or wrong.
+> - Acting on hallucinated data → always confirm names, emails, and tech with real tools (whois, Netcraft/Wappalyzer, actual Google dorks) before using them.
+> - Stale dates/contacts → WHOIS and personnel info change; treat LLM output as leads, not facts.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> The LLM is just an **accelerator** for passive recon — it summarizes open-source data and suggests queries without you contacting the target. It is not a source of truth: use it to draft dorks and connect dots, then verify everything with the real tools.
+
 ---
 %% graph-links %%
 ## Related

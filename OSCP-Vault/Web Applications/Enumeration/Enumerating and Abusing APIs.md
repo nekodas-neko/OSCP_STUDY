@@ -489,6 +489,34 @@ curl -d '{"password":"pwned","username":"admin"}' -H 'Content-Type: application/
 > request to the Repeater or Intruder for further testing.
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[API server on a port e.g. 5002] --> B["gobuster dir -u http://IP:5002 -w big.txt -p pattern"]
+    B --> C{Endpoints found?}
+    C -->|"/users/v1, /books/v1"| D["curl -i http://IP:5002/users/v1"]
+    D --> E{Response code?}
+    E -->|"200 OK lists users"| F[Note usernames e.g. admin]
+    E -->|"405 Method Not Allowed"| G[Path exists, try POST/PUT/PATCH]
+    G --> H["curl -X PUT -H 'Content-Type: application/json' -d data URL"]
+    F --> I[Try register with extra admin:true field]
+    I --> J["Login to get JWT auth_token, then abuse it"]
+```
+
+> [!success] What success looks like
+> `curl -i .../users/v1` returns `HTTP/1.0 200 OK` with a JSON list of accounts including `admin`. A `405 METHOD NOT ALLOWED` is also a win — it confirms the path exists but your HTTP method is wrong, so switch to POST/PUT. Eventually a register/login returns `"auth_token": "eyJ..."` (a JWT) proving account takeover.
+
+> [!danger] Common errors
+> - 404 everywhere → wrong port or missing the API version; use the gobuster `-p` pattern file with `{GOBUSTER}/v1` and `{GOBUSTER}/v2`.
+> - POST data ignored / 400 errors → you forgot the JSON header; add `-H 'Content-Type: application/json'` and pass valid JSON via `-d`.
+> - 405 on GET → do not give up; the endpoint is real, retry with `-X POST` or `-X PUT`.
+> - HTTPS API cert error → add `-k` to curl.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> An **API** is how the front-end talks to the back-end using plain HTTP requests that return JSON instead of web pages. The status code is your guide: `200` = it worked, `404` = not found, `405` = path exists but wrong method (try POST/PUT). A returned **JWT** (`eyJ...`) is a login token you can reuse in an `Authorization` header.
+
 ---
 %% graph-links %%
 ## Related

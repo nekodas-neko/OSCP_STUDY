@@ -53,6 +53,33 @@ Input reflected in a system command?
     └── Write file: ; echo test > /var/www/html/test.txt
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Find input used in a system command<br/>e.g. Archive parameter"] --> B["Inject a separator + test command"]
+    B --> C{"Did the extra command run?"}
+    C -->|No| D["Try other separators<br/>%3B semicolon, && , one & , backtick<br/>see Encoding Reference"]
+    C -->|Yes| E["Detect OS and shell<br/>git version, CMD vs PowerShell snippet"]
+    D --> C
+    E --> F["Host powercat.ps1 with python3 http.server<br/>start nc listener"]
+    F --> G["Inject download cradle + powercat reverse shell"]
+    G --> H["🐚 Reverse shell as the web user"]
+```
+
+> [!success] What success looks like
+> Your injected command runs alongside the intended one. For example `git%3Bipconfig` returns the Windows IP configuration, and the PowerShell snippet prints `PowerShell`. The final payload lands a reverse shell in your Netcat listener showing a prompt like `PS C:\Users\Administrator\Documents\meteor>`.
+
+> [!danger] Common errors
+> - "command injection attempt detected" → a filter blocks bare commands; keep the allowed word (e.g. `git`) and chain yours after a separator like `%3B`.
+> - Special characters break the request → URL-encode them (`;` = `%3B`, space = `%20`, `&` = `%26`). See [[🔣 Encoding Reference]].
+> - Wrong separator for the OS → Linux uses `;`, `&&`, `||`; Windows CMD uses `&`. If one is filtered, try another.
+> - No reverse shell despite RCE → confirm your `python3 -m http.server` shows the GET for powercat.ps1 and that `nc -nvlp 4444` is listening before you fire the payload.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Command injection means the website passes your input straight to the operating system's shell. A separator like `;` tells the shell "now run a second command" — so you smuggle your own command in after the one the app expected.
+
 ## Resources
 - [HackTricks — Command Injection](https://book.hacktricks.xyz/pentesting-web/command-injection)
 - [PayloadsAllTheThings — CMDi](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Command%20Injection)

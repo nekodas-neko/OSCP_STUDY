@@ -39,6 +39,34 @@ User input reflected in page?
     └── Needs victim to click URL — less useful for OSCP unless specifically required
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[User input appears on a page] --> B{Where is it stored/served?}
+    B -->|Saved on server, shown to everyone| C[Stored XSS<br/>persistent - hits all viewers]
+    B -->|Only echoed back to the requester| D[Reflected XSS<br/>needs victim to click a link]
+    B -->|Written into the page by client JS| E[DOM-based XSS<br/>runs in the browser DOM]
+    C --> F[High impact<br/>can target admin sessions]
+    D --> G[One victim per crafted link]
+    E --> H[Can be stored or reflected]
+    F --> I[Weaponize: steal cookie / perform admin action]
+    G --> I
+    H --> I
+```
+
+> [!success] What success looks like
+> Your injected JavaScript runs in the victim's browser under their session — a test `alert(1)` box pops, or for Stored XSS the payload fires for every user who loads the page (including an admin), enabling session hijacking or actions on their behalf.
+
+> [!danger] Common errors
+> - Payload shown as literal text on the page → the output is HTML-encoded; you need to break out of the current tag/attribute context or pick a different injection point. See [[🔣 Encoding Reference]].
+> - Cookie-theft payload returns nothing → the cookie has the `HttpOnly` flag, so JavaScript cannot read it; pivot to an action-based payload (e.g. create an admin user) instead.
+> - Reflected payload "works" for you but not the target → reflected XSS only affects whoever opens the crafted URL; for broad impact you need Stored XSS.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **Reflected XSS** bounces straight back from a single request/link and only affects that one visitor. **Stored XSS** is saved on the server (a comment, a logged User-Agent) and runs for everyone who later views it — that is why it is the higher-impact bug for hitting an admin.
+
 ## Resources
 - [HackTricks — XSS](https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting)
 - [PayloadsAllTheThings — XSS](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)

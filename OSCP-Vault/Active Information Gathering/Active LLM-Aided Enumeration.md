@@ -117,6 +117,29 @@ The -w wordlist.txt argument will allow us to supply the custom LLM-generated wo
 gobuster dns -d megacorpone.com -w wordlist.txt -t 10
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Pick target domain] --> B["Ask an LLM to generate a<br/>subdomain wordlist from public data"]
+    B --> C["Save clean, lowercase,<br/>deduped list to wordlist.txt"]
+    C --> D["Install gobuster<br/>sudo apt install gobuster"]
+    D --> E["gobuster dns -d domain -w wordlist.txt -t 10"]
+    E --> F[🏁 Found subdomains -> enumerate each]
+```
+
+> [!success] What success looks like
+> The LLM returns a clean list of candidate names (one per line, no bullets) and gobuster prints `Found: admin.megacorpone.com`, `Found: mail.megacorpone.com`, etc. Each discovered subdomain becomes a new target for port scanning and service enumeration.
+
+> [!danger] Common errors
+> - `Unable to validate base domain ... no such host` → gobuster could not resolve the apex domain; point it at a resolver with `-r 8.8.8.8` or check connectivity (it can still find subdomains).
+> - LLM output has bullets/quotes/duplicates → re-prompt asking for "clean lowercase, one entry per line, no bullet points, no duplicates" before feeding it to gobuster.
+> - `the dns command requires --domain` on newer gobuster → v3.6+ uses `--do` instead of `-d`; check `gobuster dns --help`.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> An **LLM is just a smarter wordlist generator** here — it guesses likely subdomain names (api, dev, hr, vpn...) from a company's public info so your brute force has better candidates than a generic list. The actual discovery still happens with a real tool (gobuster) that queries DNS for each guessed name. Always sanity-check LLM output; it can invent plausible-looking but fake entries.
+
 ---
 %% graph-links %%
 ## Related

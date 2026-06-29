@@ -100,6 +100,33 @@ nc -nv -u -z -w 1 192.168.50.149 120-123
 > machine.
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Want to know if a port is open] --> B{"TCP or UDP?"}
+    B -->|TCP| C["Send SYN"]
+    C --> D{"Reply?"}
+    D -->|SYN-ACK| E["Send ACK -> handshake done<br/>🏁 PORT OPEN"]
+    D -->|RST-ACK| F[PORT CLOSED]
+    B -->|UDP| G["Send empty UDP packet"]
+    G --> H{"Reply?"}
+    H -->|App data / no reply| I[🏁 Likely OPEN]
+    H -->|ICMP port unreachable| J[PORT CLOSED]
+```
+
+> [!success] What success looks like
+> For TCP, netcat prints `(ms-wbt-server) open` and Wireshark shows the SYN -> SYN-ACK -> ACK exchange. For UDP, an open port like `123 (ntp) open` either replies with app data or stays silent, while a closed UDP port triggers an ICMP "port unreachable".
+
+> [!danger] Common errors
+> - UDP results say "open" everywhere → UDP is stateless; "open|filtered" is normal because silence is ambiguous. Confirm with a real service probe.
+> - `nc` hangs forever → you forgot `-z` (zero-I/O scan mode) or `-w` (timeout); add both.
+> - Everything shows "Connection refused" → the host is reachable but those ports are closed (RST-ACK), which is actually a useful result.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> The **TCP three-way handshake** is SYN -> SYN-ACK -> ACK: like saying "hi", "hi back", "great, let's talk". If the port is open the server completes it; if closed it slams the door with an RST. **UDP** has no handshake at all — you fire a packet and infer the state from whether you get an ICMP error back, which is why UDP scans are slower and less certain.
+
 ---
 %% graph-links %%
 ## Related
