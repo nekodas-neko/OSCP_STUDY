@@ -6,6 +6,12 @@ tags:
 
 # OSCP Notes — Home
 
+> [!tip] 🚀 New here? Start with these
+> - 📖 [[📖 Start Here — Beginner Guide]] — read this first
+> - 🧰 [[🧰 Command Cheat Sheet]] — copy-paste commands
+> - 🔣 [[🔣 Encoding Reference]] — URL encoding & filter bypasses
+> - ⚠️ [[⚠️ Common Errors & Troubleshooting]] — errors and fixes
+
 ## Attack Phases
 
 | Phase | Notes |

