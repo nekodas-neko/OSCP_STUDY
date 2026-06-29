@@ -21,6 +21,35 @@ For each machine:
 □ Saved: all commands run
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Collect evidence<br/>(screenshots + commands + proof.txt)"] --> B["Structure the report"]
+    B --> C["Executive Summary<br/>(scope, timeframe, value)"]
+    B --> D["Technical Summary<br/>(grouped key findings)"]
+    B --> E["Findings & Recommendations<br/>(steps to reproduce + impact)"]
+    B --> F["Appendices<br/>(long PoCs, user lists)"]
+    C --> G["Assemble deliverable PDF"]
+    D --> G
+    E --> G
+    F --> G
+    G --> H["Name it OSCP-OS-XXXXX-Exam-Report.pdf"]
+    H --> I["Submit within 24h"]
+```
+
+> [!success] What success looks like
+> Every claimed machine has its IP, the `proof.txt` value, and a screenshot showing `whoami`/`hostname` + IP — and someone else could follow your step-by-step instructions to reproduce each compromise from scratch.
+
+> [!warning] Exam pitfalls
+> - Missing proof screenshots → a flag with no screenshot of `whoami`/`hostname` + IP and the `proof.txt`/`local.txt` contents will not be counted.
+> - Pasting proof text but not the screenshot (or vice versa) → the exam requires *both* for full credit.
+> - Steps that aren't reproducible → vague "I exploited it" notes lose points; document the exact commands and order so the grader can replay them.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> On the OSCP exam, **points come from proof, not effort**. Screenshots + the exact commands you ran are the evidence that you actually compromised the box — without them the grader cannot verify your work, so capture them *as you go*, not after the exam ends.
+
 ## Resources
 - [OffSec Exam Guide](https://help.offsec.com/hc/en-us/articles/360040165632)
 - [OSCP Report Template (WhoisFrederik)](https://github.com/whoisflkr/OSCP-Human-Friendly-Vulnerability-Report)

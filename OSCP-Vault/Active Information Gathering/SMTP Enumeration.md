@@ -29,6 +29,31 @@ Port 25/465/587 open?
 └── Found users? → feed into password attacks
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Port 25/465/587 open"] --> B["Banner grab<br/>nc -nv IP 25"]
+    B --> C{"VRFY or EXPN<br/>supported?"}
+    C -->|Yes| D["Enumerate users<br/>smtp-user-enum -M VRFY -U users.txt -t IP"]
+    C -->|No| E["Try RCPT TO method<br/>-M RCPT"]
+    D --> F[🏁 Valid usernames]
+    E --> F
+    F --> G[Feed users into password attacks]
+```
+
+> [!success] What success looks like
+> A valid user returns code `252 2.0.0 root` (or `250`), while an unknown user returns `550 5.1.1 <johndoe>: Recipient address rejected: User unknown`. The difference between those two responses is what confirms a username exists.
+
+> [!danger] Common errors
+> - Every name returns `252` → the server accepts all addresses (VRFY not really validating); switch to `-M RCPT` which is more reliable.
+> - `503 5.5.1 Error: send HELO/EHLO first` → say `HELO test` (or `EHLO`) before issuing VRFY/RCPT.
+> - Connection just hangs → the server may be greylisting/tarpitting; add a timeout or try ports 465/587.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **VRFY** asks the mail server "does this user exist?" and **EXPN** asks "who is on this mailing list?". Both leak valid usernames when left enabled. You are not logging in — you are just talking raw SMTP and reading the numeric reply codes (2xx = good, 5xx = rejected).
+
 ## Resources
 - [HackTricks — SMTP](https://book.hacktricks.xyz/network-services-pentesting/pentesting-smtp)
 

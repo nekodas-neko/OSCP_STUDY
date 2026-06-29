@@ -110,6 +110,33 @@ Allow and Disallow directives inform “polite” web crawlers which pages or di
 > Listing 7 - https://www.google.com/robots.txt
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Target web app] --> B["curl -I http://IP"]
+    B --> C{Headers reveal tech?}
+    C -->|"Server, X-Powered-By, X-Aspnet-Version"| D[Research the software/version]
+    A --> E["curl http://IP/robots.txt"]
+    E --> F{Disallow entries?}
+    F -->|/admin, /backup| G[Browse those paths manually]
+    A --> H[Firefox Network tab: refresh, click request]
+    H --> I[Read Response Headers in browser]
+```
+
+> [!success] What success looks like
+> `curl -I` returns headers such as `Server: Apache/2.4.41 (Ubuntu)` or `X-Powered-By: PHP/7.4`. `robots.txt` lists `Disallow:` paths like `/admin` — exactly the "hidden" pages worth visiting.
+
+> [!danger] Common errors
+> - `curl: (60) SSL certificate problem` on HTTPS labs → add `-k` to skip cert verification: `curl -Ik https://IP`.
+> - `-I` shows nothing useful → some servers reject HEAD; try `curl -i http://IP` (lowercase, full GET with headers).
+> - robots.txt returns 404 → not every site has one; that is fine, move on to gobuster.
+> - Network tab empty → it only records after it opens; refresh the page (F5).
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> `-I` (capital i) asks only for the **headers**, not the page body — a fast way to see the `Server` line and other tech hints. `robots.txt` is a public file websites use to tell crawlers what to skip, which conveniently points you straight at sensitive areas.
+
 ---
 %% graph-links %%
 ## Related

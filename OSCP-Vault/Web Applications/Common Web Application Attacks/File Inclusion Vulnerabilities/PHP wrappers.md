@@ -38,6 +38,34 @@ LFI confirmed but no logs accessible?
     └── Fall back to log poisoning or RFI
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["LFI confirmed in a page parameter"] --> B{"What do you need?"}
+    B -->|Read source code| C["php://filter/convert.base64-encode/resource=admin.php"]
+    C --> D["Copy the base64 blob, decode with base64 -d"]
+    D --> E["✅ See hidden PHP, e.g. DB password"]
+    B -->|Code execution| F["data:// wrapper<br/>embed a PHP snippet inline"]
+    F --> G{"Filter blocking words like system?"}
+    G -->|No| H["data://text/plain,...PHP echo system ls..."]
+    G -->|Yes| I["base64-encode the snippet first<br/>data://text/plain;base64,... &cmd=ls<br/>see Encoding Reference"]
+    H --> J["✅ Command output in response"]
+    I --> J
+```
+
+> [!success] What success looks like
+> With `php://filter` the response shows a long base64 string; decoding it reveals the raw PHP source (e.g. `$password = "..."`). With `data://` the response embeds your command's output, like a directory listing (`admin.php`, `bavarian.php`, `index.php`, `start.sh`).
+
+> [!danger] Common errors
+> - `php://filter` returns the rendered page, not base64 → you forgot `convert.base64-encode/`; add it before `resource=`.
+> - `data://` does nothing → `allow_url_include` must be `On`; it is off by default, so fall back to log poisoning or RFI.
+> - Filter blocks `system` or `<?php` → base64-encode the whole snippet and use `;base64,` form. See [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> PHP "wrappers" are special URL schemes PHP understands. `php://filter` lets you *read* a file's source (handy because PHP code normally runs and is hidden), while `data://` lets you feed PHP your own code to *execute* — turning a read-only file inclusion into code execution.
+
 ## Resources
 - [HackTricks — PHP Wrappers](https://book.hacktricks.xyz/pentesting-web/file-inclusion#lfi-rfi-using-php-wrappers)
 - [PayloadsAllTheThings — PHP Wrappers](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/File%20Inclusion#wrapper-phpfilter)

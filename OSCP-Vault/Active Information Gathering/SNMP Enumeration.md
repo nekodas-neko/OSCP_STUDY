@@ -44,6 +44,36 @@ UDP 161 open?
 | `1.3.6.1.4.1.77.1.2.25` | User accounts |
 | `1.3.6.1.2.1.6.13.1.3` | Open TCP ports |
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Find SNMP hosts<br/>sudo nmap -sU --open -p 161 range"] --> B{"Community string<br/>known?"}
+    B -->|Try default| C["snmpwalk -c public -v1 -t 10 IP"]
+    B -->|Unknown| D["Brute strings<br/>onesixtyone -c community -i ips"]
+    D --> C
+    C --> E["Users<br/>...1.3.6.1.4.1.77.1.2.25"]
+    C --> F["Processes<br/>...1.3.6.1.2.1.25.4.2.1.2"]
+    C --> G["Software<br/>...1.3.6.1.2.1.25.6.3.1.2"]
+    C --> H["TCP ports<br/>...1.3.6.1.2.1.6.13.1.3"]
+    E --> I[🏁 Users, software, hidden ports]
+    F --> I
+    G --> I
+    H --> I
+```
+
+> [!success] What success looks like
+> `snmpwalk -c public -v1` prints a stream of `iso.3.6.1...= STRING:` lines instead of timing out. The user OID reveals account names like `"Administrator"` and `"student"`; the process OID lists running `.exe` names; the TCP-ports OID reveals services (e.g. 88, 135, 389, 445) that may not be reachable from outside.
+
+> [!danger] Common errors
+> - `Timeout: No Response from <IP>` → wrong community string or SNMP not listening on UDP 161; bump `-t 10` and brute strings with onesixtyone.
+> - No output but no error → you used the wrong SNMP version; SNMP v1 devices need `-v1`, v2c needs `-v2c`.
+> - `snmpwalk: Unknown host` / OID errors → quote or fully type the OID; install `snmp-mibs-downloader` if you want named OIDs instead of numbers.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> A **community string** is SNMP's version of a password. By default many devices ship with `public` (read-only) and `private` (read-write) — guessing `public` first works surprisingly often. SNMP runs over **UDP 161**, so a normal TCP scan will miss it; you must scan with `-sU`.
+
 ## Resources
 - [HackTricks — SNMP](https://book.hacktricks.xyz/network-services-pentesting/pentesting-snmp)
 

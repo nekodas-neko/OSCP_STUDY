@@ -154,6 +154,34 @@ The PHP system function will parse any statement included in the cmd parameter c
 > execution, let's discover how to automate the process with specific tools.
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[SQL injection with DB privileges] --> B{Which database engine?}
+    B -->|MSSQL| C["Enable show advanced options then xp_cmdshell<br/>via sp_configure and RECONFIGURE"]
+    C --> D["EXECUTE xp_cmdshell to run OS commands"]
+    D --> E[whoami confirms code execution]
+    B -->|MySQL| F["UNION SELECT a PHP one-liner<br/>INTO OUTFILE in a writable web folder"]
+    F --> G["Browse to the webshell with a cmd parameter"]
+    G --> H[id returns www-data]
+    E --> I[🏁 Command execution on the host]
+    H --> I
+```
+
+> [!success] What success looks like
+> On MSSQL, after enabling the feature, `EXECUTE xp_cmdshell 'whoami';` returns something like `nt service\mssql$sqlexpress`. On MySQL, the `INTO OUTFILE` UNION writes `webshell.php`, and browsing `.../tmp/webshell.php?cmd=id` returns `uid=33(www-data)` — proof of remote command execution.
+
+> [!danger] Common errors
+> - `xp_cmdshell` is "disabled" → you must first run `EXECUTE sp_configure 'show advanced options', 1;` then `RECONFIGURE;` before enabling `xp_cmdshell`; call it with `EXECUTE`, not `SELECT`.
+> - `INTO OUTFILE` fails / "can't create/write to file" → the path must be writable by the DB's OS user; use a writable AND web-served folder like `/var/www/html/tmp/`.
+> - A `mysqli_fetch_array()` TypeError appears after the OUTFILE payload → that error is about the return type and does not stop the file being written; check if the webshell exists.
+> - Quotes inside the PHP payload getting mangled in the form/URL → see [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> There is no single "run a command" SQL function on MySQL like MSSQL's `xp_cmdshell`. Instead you abuse `SELECT ... INTO OUTFILE` to *write a small PHP file to disk*; visiting that file in the browser is what actually runs your commands. The folder must be both writable by the database and reachable over HTTP.
+
 ---
 %% graph-links %%
 ## Related

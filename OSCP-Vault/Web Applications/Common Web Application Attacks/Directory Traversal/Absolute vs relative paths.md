@@ -124,6 +124,31 @@
 > Listing 4 - Adding more "./ to the relative path
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Where am I in the filesystem?<br/>pwd shows /home/kali"] --> B{"Absolute or relative path?"}
+    B -->|Absolute| C["Start at root with a leading slash<br/>/etc/passwd works from anywhere"]
+    B -->|Relative| D["Start from current directory<br/>climb up with ../ for each level"]
+    D --> E["Stack ../ to reach root<br/>../../etc/passwd"]
+    E --> F["Extra ../ is harmless<br/>../../../../etc/passwd still works"]
+    C --> G["Same file contents shown"]
+    F --> G
+```
+
+> [!success] What success looks like
+> Both `cat /etc/passwd` (absolute) and `cat ../../etc/passwd` (relative, from /home/kali) print the same file, with lines like `root:x:0:0:root:/root:/usr/bin/zsh`.
+
+> [!danger] Common errors
+> - File not found with a relative path → you started counting `../` from the wrong directory; check `pwd` first.
+> - Too few `../` → you never reach `/`; adding more `../` than needed is safe because `/..` just stays at root.
+> - Leading slash where you wanted relative (or vice versa) → a leading `/` means absolute (from root); no slash means relative (from here).
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> An **absolute path** starts at the root `/` and is the same no matter where you are. A **relative path** is directions from your current folder, where each `../` means "go up one level." Directory traversal exploits relative paths to climb out of the web root.
+
 ---
 %% graph-links %%
 ## Related

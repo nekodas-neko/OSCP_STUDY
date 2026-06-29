@@ -35,6 +35,30 @@ Have a domain name?
     └── dnsrecon -r <IP>/24 -n <nameserver>
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Have a domain name] --> B{"Zone transfer?<br/>host -l domain ns"}
+    B -->|Success| C[🏁 Dump every record at once]
+    B -->|Refused| D["Standard records<br/>dnsrecon -d domain -t std"]
+    D --> E["Brute subdomains<br/>dnsrecon -d domain -D wordlist.txt -t brt"]
+    E --> F["Reverse lookups on found IP range<br/>for ip in seq 64 79; host range"]
+    F --> G[🏁 New hosts -> repeat on each]
+```
+
+> [!success] What success looks like
+> A zone transfer dumps the full record list in one shot. Otherwise `dnsrecon -t std` returns NS/MX/A/TXT records, and brute forcing prints lines like `A mail.megacorpone.com 167.114.21.68` — each new hostname/IP is a fresh target to enumerate.
+
+> [!danger] Common errors
+> - `Host X not found: 3(NXDOMAIN)` → the name simply does not resolve; that hostname does not exist (this is normal during brute forcing).
+> - Zone transfer `Transfer failed` / `connection timed out; no servers could be reached` → the nameserver refuses AXFR (the secure default). Move on to `-t std` and brute forcing.
+> - `Unable to validate base domain ... no such host` → your DNS resolver cannot reach the domain; specify a nameserver with `-n <ns IP>` or fix `/etc/resolv.conf`.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> A **zone transfer** (AXFR) is a feature meant to copy the entire DNS database from a primary nameserver to a backup. If a server is misconfigured to allow it to anyone, you get a complete list of every host in the domain for free — always try it first. A **record type** just tells DNS what kind of answer you want: `A` = IPv4, `MX` = mail server, `NS` = nameserver, `TXT` = free-text, `PTR` = reverse (IP back to name).
+
 ## Resources
 - [HackTricks — DNS](https://book.hacktricks.xyz/network-services-pentesting/pentesting-dns)
 - [SecLists DNS wordlists](https://github.com/danielmiessler/SecLists/tree/master/Discovery/DNS)

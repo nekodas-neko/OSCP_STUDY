@@ -114,6 +114,30 @@ These basic examples only scratch the surface of what we can do with search oper
 > ‘Fgure 4: Using Google to Find Directory Listings
 > ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Broad search] --> B["site:megacorpone.com (scope to one domain)"]
+    B --> C["Add filetype:txt / ext:php (narrow by file type)"]
+    C --> D["Add -filetype:html (exclude noise)"]
+    D --> E["intitle:&quot;index of&quot; (find directory listings)"]
+    E --> F[Sensitive files, robots.txt, configs]
+    F --> G[Check GHDB for more dork ideas]
+```
+
+> [!success] What success looks like
+> A refined query surfaces something the normal site does not link to: a `robots.txt` revealing a hidden page (`/nanites.php`), an open directory listing (`index of`), or a downloadable config/backup file (`latest.zip`). Each hit is a lead for the active phase.
+
+> [!danger] Common errors
+> - Putting a space after the colon → `site: megacorpone.com` fails; it must be `site:megacorpone.com` with no space.
+> - Quoting the whole query instead of just the phrase → use quotes only around exact phrases: `intitle:"index of"`, not `"site:megacorpone.com filetype:txt"`.
+> - Getting rate-limited / CAPTCHA after many dorks → slow down, vary queries, or use the GHDB (exploit-db.com/google-hacking-database) for proven examples.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Google Hacking ("dorking") is **passive** — you are searching Google's index, not touching the target's server. Operators like `site:`, `filetype:`, `intitle:` and the minus sign (`-`) for exclusion are just filters that narrow a broad search down to interesting files.
+
 ---
 %% graph-links %%
 ## Related

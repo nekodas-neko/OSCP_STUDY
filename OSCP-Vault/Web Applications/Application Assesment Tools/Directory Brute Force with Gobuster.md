@@ -40,6 +40,33 @@ Web server found?
 - `Discovery/Web-Content/raft-large-files.txt` — file-focused
 - `Discovery/DNS/subdomains-top1million-5000.txt` — vhost/dns
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Web server found] --> B["gobuster dir -u http://IP -w common.txt"]
+    B --> C{Status codes returned?}
+    C -->|"200/301/302 e.g. /admin (301)"| D[Visit + inspect those paths]
+    C -->|nothing found| E["Add extensions: -x php,txt,html,bak"]
+    E --> F[Still nothing? Use bigger wordlist directory-list-2.3-medium.txt]
+    D --> G{Got a hostname, not just IP?}
+    G -->|yes| H["gobuster vhost -u http://domain -w subdomains.txt --append-domain"]
+    D --> I[Interesting dir? Recurse into it]
+```
+
+> [!success] What success looks like
+> Gobuster prints found paths with their status, e.g. `/css (Status: 301)`, `/index.php (Status: 302) [--> /login.php]`, `/uploads (Status: 301)`. The 200/301/302 entries are real pages — those are your next targets.
+
+> [!danger] Common errors
+> - `wordlist file does not exist` → point `-w` at a real path, e.g. `/usr/share/wordlists/dirb/common.txt` or a SecLists file.
+> - HTTPS target: `unknown certificate` / TLS error → add `-k` to skip cert checks.
+> - Every path returns the same status (false positives) → blacklist it, e.g. `-b 301,404`, or filter by size with `--exclude-length`.
+> - Missing scheme error → include `http://` (or `https://`) in the `-u` URL on newer Gobuster versions.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **Directory brute forcing** guesses hidden pages and folders from a wordlist, one request per word. Most web wins start by finding an unlinked page like `/admin` or `/backup` that the site never links to.
+
 ## Resources
 - [HackTricks — Web Fuzzing](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web#directories-and-files)
 - [SecLists](https://github.com/danielmiessler/SecLists)

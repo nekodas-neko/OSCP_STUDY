@@ -39,6 +39,33 @@ User input reflected in page?
     └── Needs victim to click URL — less useful for OSCP unless specifically required
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Browse offsecwp through Burp] --> B[Send a request to Repeater]
+    B --> C[Replace the User-Agent with an alert payload]
+    C --> D[Send request - expect 200 OK]
+    D --> E[Payload now stored in the WordPress DB]
+    E --> F[Log in as admin and open the Visitors plugin]
+    F --> G{Alert pops showing 42?}
+    G -->|Yes| H[Stored XSS confirmed]
+    G -->|No| I[Check the response source<br/>was the payload encoded or stripped]
+    H --> J[Escalate: swap alert for JS that creates an admin user]
+```
+
+> [!success] What success looks like
+> After sending the crafted `User-Agent: <script>alert(42)</script>` and getting a 200 OK, you log in as admin, open the Visitors plugin dashboard, and a pop-up banner shows **42** — proving your script was stored and then executed in the admin's browser.
+
+> [!danger] Common errors
+> - No pop-up when the admin loads the plugin → the payload may have been HTML-encoded or stripped; inspect the stored value in the response and adjust the context. See [[🔣 Encoding Reference]].
+> - You inject the payload but never see it fire → here the bug is **stored**, so the alert only triggers when the *admin* loads the Visitors plugin page, not when you send the request.
+> - Note: once wrapped in `<script>` tags, the User-Agent string itself won't render as visible text in the table — that is expected; the browser executes it instead of displaying it.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> An `alert(42)` box proves nothing useful by itself — it is just the quickest visual proof that *your* JavaScript ran. Once confirmed, you replace the harmless alert with real attack code (like creating a new administrator), which is covered in [[Privilege Escalation via XSS]].
+
 ## Resources
 - [HackTricks — XSS](https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting)
 - [PayloadsAllTheThings — XSS](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)

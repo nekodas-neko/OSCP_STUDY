@@ -443,6 +443,34 @@ OS{d00bd704b17b3259660c4ed38876da07}
 === Final Answer ===
 OS{d00bd704b17b3259660c4ed38876da07}
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[SQL injection vulnerability] --> B{Which database engine?}
+    B -->|MySQL / MariaDB| C["Connect with mysql client<br/>port 3306"]
+    B -->|MSSQL| D["Connect with impacket-mssqlclient<br/>windows-auth"]
+    C --> E["SHOW DATABASES then USE db"]
+    D --> F["SELECT name FROM sys.databases"]
+    E --> G[List tables and columns]
+    F --> G
+    G --> H["SELECT data from users table"]
+    H --> I[🏁 Dump usernames and password hashes]
+```
+
+> [!success] What success looks like
+> You connect to the DB, list databases, switch into a non-system one, and `SELECT * FROM users;` returns rows of usernames and passwords (or a flag like `OS{...}`). On MySQL, the offsec user's hash sits in `authentication_string`; on MSSQL the users table may even hold clear-text passwords.
+
+> [!danger] Common errors
+> - `ERROR 2026 (HY000)` TLS/SSL error on MySQL connect → append `--skip-ssl` (or `--skip-ssl-verify-server-cert`).
+> - "No database selected" → you forgot `USE <db>;` before your `SELECT`.
+> - On MSSQL, asking for the "first" row without `ORDER BY` is unreliable — SQL Server does not guarantee row order; always use `SELECT *` and read the first listed row.
+> - Quote/special-character issues when pasting payloads → see [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> A **database** holds **tables** (like spreadsheets), each table has **columns** (fields) and **rows** (records). SQL is just the language you use to ask the database for those rows. The four default MySQL databases (`information_schema`, `mysql`, `performance_schema`, `sys`) are system DBs — the interesting data usually lives in a custom database the app created.
+
 ---
 %% graph-links %%
 ## Related

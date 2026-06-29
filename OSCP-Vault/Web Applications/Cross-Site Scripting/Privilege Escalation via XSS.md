@@ -39,6 +39,35 @@ User input reflected in page?
     └── Needs victim to click URL — less useful for OSCP unless specifically required
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Stored XSS runs as the admin] --> B{Can we steal the session cookie?}
+    B -->|No - cookies are HttpOnly| C[JavaScript cannot read the cookie<br/>need a new angle]
+    B -->|Yes - no HttpOnly| D[Exfiltrate cookie to our listener]
+    C --> E[Payload 1: fetch /wp-admin/user-new.php<br/>and scrape the CSRF nonce]
+    E --> F[Payload 2: POST create-user request<br/>with the nonce and our admin details]
+    F --> G[Minify the JS at jscompress.com]
+    G --> H[Encode to char codes<br/>eval plus String.fromCharCode]
+    H --> I[Send via curl in the User-Agent through Burp]
+    I --> J[Admin loads Visitors plugin - payload fires]
+    J --> K[New attacker admin account created]
+```
+
+> [!success] What success looks like
+> After the admin loads the Visitors plugin, the injected JS silently runs in their session: it grabs the nonce, POSTs a create-user request, and a brand-new **attacker** account with the `administrator` role appears under Users. You now have full admin access.
+
+> [!danger] Common errors
+> - Cookie-theft payload returns nothing → the WordPress session cookies have the `HttpOnly` flag, so JavaScript cannot read them; pivot to the create-admin-user approach instead.
+> - Create-user request rejected → you are missing or using a stale **nonce** (the anti-CSRF token); fetch a fresh one from `/wp-admin/user-new.php` in the same payload before POSTing.
+> - Payload breaks when sent → unencoded special characters mangle the request; minify then encode with `String.fromCharCode` so no bad characters interfere. See [[🔣 Encoding Reference]].
+> - The User-Agent shows blank in the Visitors table → expected, because the value is wrapped in `<script>` tags and executed rather than displayed.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> A **nonce** is a one-time random token WordPress adds to forms to stop CSRF — an outside attacker can't guess it. But our JavaScript is already running *inside* the admin's authenticated page, so it can simply read the valid nonce off the page and reuse it, which is why the anti-CSRF protection doesn't stop a stored-XSS attack.
+
 ## Resources
 - [HackTricks — XSS](https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting)
 - [PayloadsAllTheThings — XSS](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/XSS%20Injection)

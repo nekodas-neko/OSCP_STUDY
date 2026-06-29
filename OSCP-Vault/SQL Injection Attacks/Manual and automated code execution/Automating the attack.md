@@ -308,6 +308,33 @@ pwd
 y
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Suspected injectable parameter] --> B["sqlmap -u URL -p param<br/>or sqlmap -r request.txt"]
+    B --> C[sqlmap fingerprints DBMS and injection type]
+    C --> D{What do you need?}
+    D -->|Data| E["--dbs then -D db --tables then -T users --dump"]
+    D -->|Shell| F["--os-shell with --web-root for the writable folder"]
+    E --> G[🏁 Dumped credentials / flag]
+    F --> H[🏁 Interactive os-shell as www-data]
+```
+
+> [!success] What success looks like
+> sqlmap prints "parameter ... is vulnerable" and identifies the technique (e.g. "time-based blind", back-end DBMS MySQL). With `--dump` it slowly retrieves rows of the users table including hashes. With `--os-shell` it uploads a backdoor and gives `os-shell>` where `id` returns `uid=33(www-data)`.
+
+> [!danger] Common errors
+> - "missing database parameter" → narrow the scope with `-D <db>` and `-T <table>` instead of dumping everything.
+> - Endless `[Y/n]` prompts (cookies, redirects, optimization) → add `--batch` to accept defaults automatically.
+> - Time-based dumps crawl and may drop the connection → expected for blind SQLi; let sqlmap auto-adjust the delay, or prefer a UNION/error point for `--os-shell`.
+> - `--os-shell` needs a writable web folder → pass `--web-root "/var/www/html/tmp"` so the stager is reachable over HTTP.
+> - Encoding/quoting of the saved request file → see [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **sqlmap** automates everything you did by hand: it finds the injection, figures out the DBMS, and pulls data or drops a shell. Feed it either a URL (`-u`) or a saved HTTP request (`-r request.txt`, ideal for POST/login forms captured in Burp). Note it is loud — not a stealthy tool.
+
 ---
 %% graph-links %%
 ## Related

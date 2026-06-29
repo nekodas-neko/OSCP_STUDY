@@ -38,6 +38,29 @@ Firewall dropping packets?
 - [HackTricks — Nmap](https://book.hacktricks.xyz/generic-methodologies-and-resources/pentesting-network/nmap-cheatsheet)
 - [Nmap NSE scripts list](https://nmap.org/nsedoc/)
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Open port found] --> B{"Need a quick<br/>safe sweep?"}
+    B -->|Yes| C["Default scripts<br/>sudo nmap -sC -sV -p port IP"]
+    B -->|Targeted| D["Pick a script<br/>nmap --script http-headers IP"]
+    D --> E["Unsure what it does?<br/>nmap --script-help name"]
+    C --> F[🏁 Versions, headers, vulns]
+    D --> F
+```
+
+> [!success] What success looks like
+> The scan prints normal port lines plus extra indented `|` output from the script, e.g. an `http-headers` run shows `Server: Apache/2.4.41 (Ubuntu)`. That banner/version is what you feed into searchsploit.
+
+> [!danger] Common errors
+> - `'http-headers' did not match a category, filename, or directory` → typo in the script name; list options with `ls /usr/share/nmap/scripts/`.
+> - Scripts run but return nothing → the service was not actually that protocol; confirm with `-sV` first.
+> - `-sC` feels slow / noisy → it runs the whole `default` category; narrow to one script with `--script <name>` on real exams.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **NSE** = Nmap Scripting Engine: small Lua scripts (in `/usr/share/nmap/scripts`) that do deeper work than a plain port scan, like grabbing HTTP headers or testing for known vulns. The shortcut `-sC` just means "run the default set of safe scripts" — pair it with `-sV` for version detection.
 
 We can use the NSE to launch user-created scripts to automate various scanning tasks. These scripts perform a broad range of functions including DNS enumeration, brute force attacks, and even vulnerability identification. NSE scripts are in the /usr/share/nmap/scripts directory.
 

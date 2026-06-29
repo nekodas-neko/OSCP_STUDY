@@ -631,6 +631,36 @@ Quick Attack Flow:
 
 --------------------------------------------------
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Code-execution labs] --> B{Lab path}
+    B -->|MSSQL VM 1| C["Enable show advanced options then xp_cmdshell"]
+    B -->|MySQL VM 2 manual| D["ORDER BY for columns then UNION INTO OUTFILE webshell"]
+    B -->|MySQL VM 2 sqlmap| E["sqlmap -r req.txt --batch then --dbs / --tables / --dump"]
+    C --> F[xp_cmdshell runs OS commands]
+    D --> G["Browse webshell, run id then ls then cat flag.txt"]
+    E --> H[sqlmap dumps users table]
+    F --> I[🏁 Flag / shell]
+    G --> I
+    H --> I
+```
+
+> [!success] What success looks like
+> MSSQL lab: enabling `show advanced options` lets you turn on `xp_cmdshell`. MySQL manual lab: the `INTO OUTFILE` shell works and `?cmd=cat flag.txt` returns `OS{77345c4e4143bc49c5cd48011b47a416}`. sqlmap lab: `--dump` of the offsec users table reveals the flag `OS{1f85dd01ad25abf987f483fc8df66380}` in the description column.
+
+> [!danger] Common errors
+> - Can't enable `xp_cmdshell` → enable `show advanced options` first, then `RECONFIGURE`.
+> - INTO OUTFILE says "File already exists" → it cannot overwrite; the webshell is likely already there, just use it.
+> - Wrong write path → `/tmp` is writable but not web-served, `/var/www/html` is served but often not writable; `/var/www/html/tmp/` is both.
+> - sqlmap stalling on prompts → add `--batch`; scope with `-D offsec -T users` to avoid dumping the whole server.
+> - URL-encoding spaces in `cmd` (use `%20`) and quote issues → see [[🔣 Encoding Reference]].
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> These labs combine the earlier skills into actual code execution: write/enable a way to run commands, then read a file. The column count must match for the UNION webshell, and for sqlmap you point it at a saved request (`-r req.txt`) and let `--batch` answer the prompts for you.
+
 ---
 %% graph-links %%
 ## Related

@@ -61,6 +61,29 @@ Netcraft is an internet service company based in England offering a free web por
 [https://www.wappalyzer.com/lookup/megacorpone.com/](https://www.wappalyzer.com/lookup/megacorpone.com/)
 to find the answers on a live site.
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A["Netcraft DNS search: *.megacorpone.com"] --> B[List of matching hostnames]
+    B --> C["Open Site Report for a host"]
+    C --> D[Registration info + network details]
+    C --> E["Site Technology: app servers, frameworks, CDN"]
+    E --> F["DNS search part discontinued (2024) -> use Wappalyzer instead"]
+```
+
+> [!success] What success looks like
+> Netcraft returns a list of hostnames matching `*.megacorpone.com`, and each Site Report shows registration info plus the server's technology stack (application servers, scripting frameworks, CDN). On the live Wappalyzer lookup you get the same kind of tech-stack breakdown.
+
+> [!danger] Common errors
+> - Expecting the old DNS search to work → Netcraft discontinued that part of the service in 2024; use the screenshots here or pivot to Wappalyzer for live results.
+> - Searching the bare domain only → use the wildcard form `*.megacorpone.com` to catch subdomains, not just the apex.
+> - Treating the tech stack as confirmed → it is third-party reported and may be stale; verify during the active phase.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Netcraft is **passive**: a third-party site (Netcraft) does the looking, so you never connect to the target yourself. It is a quick way to learn what technologies a site runs and which hosts share its netblock before any active scanning.
+
 ---
 %% graph-links %%
 ## Related
