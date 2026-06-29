@@ -36,6 +36,33 @@ Got a share? Download everything:
 └── smbclient //<IP>/<share> -N -c "recurse ON; prompt OFF; mget *"
 ```
 
+## Visual Flow
+
+```mermaid
+flowchart TD
+    A[Port 139/445 open] --> B{Null session works?<br/>smbclient -L //IP/ -N}
+    B -->|Yes| C[enum4linux -a IP<br/>users, shares, OS]
+    B -->|No| D{Have creds?}
+    D -->|Yes| E[smbclient //IP/share -U user]
+    D -->|No| F[Brute / find creds elsewhere]
+    C --> G{Interesting share?}
+    G -->|Yes| H[Download all files<br/>recurse ON; mget *]
+    G -->|No| I[Check known vulns<br/>MS17-010 EternalBlue]
+    H --> J[🏁 Look for creds, configs, flags]
+```
+
+> [!success] What success looks like
+> `enum4linux -a` prints a user list and shares; `smbclient -L` shows share names (e.g. `ADMIN$`, `C$`, custom shares). A readable custom share often contains configs, backups, or creds.
+
+> [!danger] Common errors
+> - `NT_STATUS_ACCESS_DENIED` → you need creds; try null `-N` first, then known users.
+> - `protocol negotiation failed` → modern client refuses SMBv1. Add `--option='client min protocol=NT1'`.
+> - `NT_STATUS_LOGON_FAILURE` → wrong creds; try empty `''` or `guest`.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> **Null session** = connecting with no username/password (`-N`). Many boxes allow it and it's the fastest first move. Always try it before anything else.
+
 ## Resources
 - [HackTricks — SMB](https://book.hacktricks.xyz/network-services-pentesting/pentesting-smb)
 - [PayloadsAllTheThings — SMB](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Network%20Pentesting.md)
