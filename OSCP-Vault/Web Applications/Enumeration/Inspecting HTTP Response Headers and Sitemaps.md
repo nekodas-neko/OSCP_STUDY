@@ -1,5 +1,6 @@
 ---
 tags:
+  - phase/enumeration
   - enumeration
   - http
   - nmap

@@ -1,3 +1,8 @@
+---
+tags:
+  - phase/exploitation
+---
+
 # Automating the attack
 
 10.3.2. Automating the attack

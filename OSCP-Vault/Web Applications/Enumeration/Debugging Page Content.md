@@ -1,3 +1,8 @@
+---
+tags:
+  - phase/enumeration
+---
+
 # Debugging Page Content
 
 A good place to start our web application information mapping is with a URL address. File extensions, which are sometimes part of a URL, can reveal the programming language the application was written in. Some extensions, like .php, are straightforward, but others are more cryptic and vary based on the frameworks in use. For example, a Java-based web application might use .jsp, .do, or .html.

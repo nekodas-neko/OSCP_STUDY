@@ -1,5 +1,6 @@
 ---
 tags:
+  - phase/exploitation
   - exam-practice
   - lab
 ---
