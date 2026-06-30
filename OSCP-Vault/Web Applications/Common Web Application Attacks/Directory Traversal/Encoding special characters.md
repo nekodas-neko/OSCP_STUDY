@@ -1,3 +1,8 @@
+---
+tags:
+  - phase/exploitation
+---
+
 # Encoding special characters
 
 

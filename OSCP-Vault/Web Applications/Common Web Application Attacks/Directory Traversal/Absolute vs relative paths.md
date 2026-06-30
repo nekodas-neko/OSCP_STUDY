@@ -1,3 +1,8 @@
+---
+tags:
+  - phase/exploitation
+---
+
 # Absolute vs relative paths
 
 

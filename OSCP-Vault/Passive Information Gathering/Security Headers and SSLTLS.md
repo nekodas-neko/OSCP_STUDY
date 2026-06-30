@@ -1,5 +1,6 @@
 ---
 tags:
+  - phase/recon
   - http
   - passive-recon
   - ssl

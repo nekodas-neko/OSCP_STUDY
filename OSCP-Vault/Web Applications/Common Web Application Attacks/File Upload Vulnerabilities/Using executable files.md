@@ -1,5 +1,6 @@
 ---
 tags:
+  - phase/exploitation
   - rce
   - shell
 ---

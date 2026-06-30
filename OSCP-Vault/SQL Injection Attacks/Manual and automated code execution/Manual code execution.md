@@ -1,3 +1,8 @@
+---
+tags:
+  - phase/exploitation
+---
+
 # Manual code execution
 
 10.3.1. Manual code execution
