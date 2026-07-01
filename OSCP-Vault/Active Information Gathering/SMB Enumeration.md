@@ -74,25 +74,7 @@ The NetBIOS service listens on TCP port 139, as well as several UDP ports. It sh
 
 These services can be scanned with tools like nmap, using syntax such as the following:
 
-> [!note]- Screenshot
-> ```
-> kaligkali:~$ nmap -v -p 139,445 -0G smb.txt 192.168.50.1-254
-> kaligkali:~$ cat smb.txt
-> # Nmap 7.92 scan initiated Thu Mar 17 06:03:12 2022 as: nmap -v -p 139,445 -oG smb.txt
-> 192.168.50.1-254
-> # Ports scanned: TCP(2;139,445) UDP(@;) SCTP(@;) PROTOCOLS(@;)
-> Host: 192.168.52.1 () Status: Down
-> Host: 192.168.50.21 () Status: Up
-> Host: 192.168.5.21 () Ports: 139/closed/tcp//netbios-ssn///,
-> 445 /closed/tcp//microsoft-ds///
-> Host: 192.168.50.217 () Status: Up
-> Host: 192.168.50.217 () Ports: 139/closed/tcp//netbios-ssn///,
-> 445/closed/tcp//microsoft-ds///
-> # Nmap done at Thu Mar 17 06:03:18 2022 -- 254 IP addresses (15 hosts up) scanned in
-> 6.17 seconds
-> Listing 49 - Using nmap to scan for the NetBIOS service
-> ```
-
+Scan a range for the NetBIOS (139) and SMB (445) ports, saving greppable output:
 
 ```sh
 nmap -v -p 139,445 -oG smb.txt 192.168.50.1-254
@@ -100,20 +82,7 @@ nmap -v -p 139,445 -oG smb.txt 192.168.50.1-254
 
 There are other, more specialized tools for specifically identifying NetBIOS information, such as nbtscan. We can use this to query the NetBIOS name service for valid NetBIOS names, specifying the originating UDP port as 137 with the -r option.
 
-> [!note]- Screenshot
-> ```
-> kaligkali:~$ sudo nbtscan -r 192.168.50.0/24
-> 
-> Doing NBT name scan for addresses from 192.168.50.0/24
-> 
-> IP address NetBIOS Name Server User MAC address
-> 
-> 192.168.50.124 SAMBA <server> SAMBA 20:00:00:00:00:00
-> 
-> 192.168.50.134  SAMBAKEB <server> SAMBANEB 20:00:00:00:00:00
-> Listing 50 - Using nbtscan to collect additional NetBIOS information
-> ```
-
+Query the NetBIOS name service (`-r` sets the originating UDP port to 137) to collect NetBIOS names, which are often descriptive of a host's role:
 
 ```sh
 sudo nbtscan -r 192.168.50.0/24
@@ -123,82 +92,18 @@ The scan revealed two NetBIOS names belonging to two hosts. This kind of informa
 
 Nmap also offers many useful NSE scripts that we can use to discover and enumerate SMB services. We'll find these scripts in the /usr/share/nmap/scripts directory.
 
-> [!note]- Screenshot
-> ```
-> kaligkali:~$ 1s -1 /usr/share/nmap/scripts/smb*
-> /usr/share/nmap/scripts/smb2-capabilities.nse
-> /usr/share/nmap/scripts/smb2-security-mode.nse
-> /usr/share/nmap/scripts/smb2-tine nse
-> /usr/share/nmap/scripts/smb2-vuln-uptime.nse
-> /usr/share/nmap/scripts/smb-brute.nse
-> /usr/share/nmap/scripts/snb-double-pulsar-backdoor.nse
-> /usr/share/nmap/scripts/smb-enum-domains .nse
-> /usr/share/nmap/scripts/smb-enun-groups.nse
-> /usr/share/nmap/scripts/smb-enum-processes nse
-> /usr/share/nmap/scripts/smb-enum-sessions.nse
-> /usr/share/nmap/scripts/smb-enun-shares.nse
-> /usr/share/nmap/scripts/smb-enun-users.nse
-> /usr/share/nmap/scripts/smb-os-discovery nse
-> 
-> Listing 51 - Finding various nmap SMB NSE scripts
-> ```
-
-sud
+List the available SMB NSE scripts (e.g. `smb-enum-shares`, `smb-enum-users`, `smb-os-discovery`, `smb-brute`):
 
 ```sh
 ls -1 /usr/share/nmap/scripts/smb*
 ```
 
 
-> [!note]- Screenshot
-> ```
-> The SMB discovery script works only if SMBv1 is enabled on the
-> target, which is not the default case on modern versions of Windows.
-> However, plenty of legacy systems are still running SMBv1, and we
-> have enabled this specific version on the Windows host to simulate
-> such a scenario.
-> ```
+> [!info] SMBv1 requirement
+> The SMB discovery script only works when SMBv1 is enabled on the target. SMBv1 is disabled by default on modern Windows, but many legacy systems still run it.
 
 
-> [!note]- Screenshot
-> ```
-> Let's try the smb-os-discovery module on the Windows 11 client.
-> 
-> kaligkali:~$ nmap -v -p 139,445 --script snb-os-discovery 192.168.50.152
-> 
-> PORT STATE SERVICE REASON
-> 
-> 139/tcp open netbios-ssn syn-ack
-> 
-> 445/tcp open microsoft-ds syn-ack
-> 
-> Host script results:
-> 
-> | smb-os-discovery:
-> 
-> | 0S: Windows 18 Pro 22000 (Windows 10 Pro 6.3)
-> 
-> | 0S CPE: cpe:/o:microsoft:windows_1@: :-
-> 
-> | Computer name: client@1
-> 
-> | NetBIOS computer name: CLIENT@1\x00
-> 
-> | Domain name: megacorptwo.com
-> 
-> | Forest name: megacorptwo.com
-> 
-> | FODN: clientel.megacorptwo.com
-> 
-> I_. System time: 2022-03-17711:54:20-07:00
-> 
-> sting 52 - Using the nmap scripting engine to perform OS discovery
-> 
-> This particular script identified a potential match for the host operating system;
-> however, we know it's inaccurate, as the target host is running Windows 11 instead of
-> the reported Windows 10.
-> ```
-
+The `smb-os-discovery` script reveals OS, computer name, domain/forest name, and FQDN (e.g. `client01.megacorptwo.com`). Note the OS guess can be off — here it reported Windows 10 for a Windows 11 host:
 
 ```sh
 nmap -v -p 139,445 --script smb-os-discovery 192.168.50.152
@@ -208,36 +113,7 @@ nmap -v -p 139,445 --script smb-os-discovery 192.168.50.152
 ## Windows SMB Enumeration:
 
 
-> [!note]- Screenshot
-> ```
-> One useful tool for enumerating SMB shares within Windows environments is net view. It
-> lists domains, resources, and computers belonging to a given host. As an example,
-> connected to the client01 VM, we can list all the shares running on dc01.
-> 
-> C:\Users\student> net view \\dcO1 /all
-> 
-> Shared resources at \\dcO1
-> 
-> Share name Type Used as Comment:
-> 
-> AOMINS Disk Remote Adnin
-> 
-> cs Disk Default share
-> 
-> recs rec Remote IPC
-> 
-> NETLOGON Disk Logon server share
-> 
-> SYSVOL Disk Logon server share
-> 
-> ‘The command completed successfully.
-> 
-> Listing 53 - Running ‘net view’ to list remote shares
-> 
-> By providing the /a11 keyword, we can list the administrative shares ending with the
-> dollar sign.
-> ```
-
+From a Windows host, `net view` lists a remote host's shares. The `/all` flag also shows administrative shares ending in `$` (e.g. `ADMIN$`, `C$`, `IPC$`, `NETLOGON`, `SYSVOL`):
 
 ```sh
 net view \\dc01 /all

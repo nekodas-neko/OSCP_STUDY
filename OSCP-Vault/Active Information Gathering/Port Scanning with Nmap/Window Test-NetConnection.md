@@ -71,40 +71,12 @@ For instance, from the Windows 11 client, we can verify if the SMB port 445 is o
 
 The returned value in the TcpTestSucceeded parameter indicates that port 445 is open.
 
-> [!note]- Screenshot
-> ```
-> PS C:\Users\student> Test-NetConnection -Port 445 192.168.50.151
-> ComputerNiame = 192.168.50.151
-> RemoteAddress : 192.168.50.151
-> RemotePort. 1445
-> InterfaceAlias : Ethernet
-> SourceAddress : 192.168.50.152
-> TepTestSucceeded : True
-> Listing 47 - Port scanning SMB via PowerShell
-> ```
-
-
 ```sh
 Test-NetConnection -Port 445 192.168.50.151
 ```
 
 
-> [!note]- Screenshot
-> ```
-> We can further script the whole process to scan the first 1024 ports on the Domain
-> Controller with the PowerShell one-liner shown below. To do so, we need to instantiate a
-> TepClient Socket object as Test-NetConnection to send additional traffic that is not
-> needed for our purposes.
-> 
-> PS C:\Users\student> 1..1024 | % {echo ((New-Object
-> 
-> Net Sockets. TcpClient) Connect ("192.168.50.151", $_)) “TCP port $_ is open"} 2>$null
-> 
-> TcP port 88 is open
-> 
-> Listing 48 - Automating the PowerShell portscanning
-> ```
-
+> [!info] To scan a range of ports, loop over `1..1024` and instantiate a raw `Net.Sockets.TcpClient` socket per port — this avoids the extra traffic `Test-NetConnection` sends. Each reachable port prints `TCP port <n> is open`; `2>$null` suppresses the errors from closed ports.
 
 ```sh
 1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.50.151", $_)) "TCP port $_ is open"} 2>$null

@@ -19,78 +19,16 @@ We'll notice that the application uses jQuery version 3.6.0, a common JavaScript
 
 We can also use the Inspector tool to drill down into specific page content. Let's use Inspector to examine the search input element from the WordPress home page by scrolling, right-clicking the search field on the page, and selecting Inspect.
 
-> [!note]- Screenshot
-> ```
-> Let's test this out by opening Debugger while browsing the offsecwp app:
-> Ortsec-We Love Security > x | + - 2 x
-> «> ca © B offsecwp e 2o=
-> 
-> BEKaliLinux WE KaiToots WR Kali Forums} KaliDocs BENetHunter Ik Offensive Security LMSFU «& Expoit-08. # GHDB
-> 
-> S
-> 
-> RO inspector ©) conte HH nero CO) SyieEstor D Peromance OE Memory EQ Stonge FF Aesshty BE Appcaion > f] w+ x
-> ontne 1B. jveremasoneymin > oi om
-> 
-> 0 tne ——
-> 
-> ap comettbenestrnatasurcss eR Designs
-> ances Event tener iis 5
-> 
-> Oe
-> ee ssomen (DOM Mutation reakpis
-> Figure 16: Using Developer Tools to Inspect JavaScript Sources
-> ```
+> [!info] Inspecting JavaScript sources
+> Open the Debugger tab (Web Developer menu) while browsing the target app. It lists the page's loaded JavaScript sources, letting you review the libraries and code the application ships.
 
 
-> [!note]- Screenshot
-> ```
-> CRO topetor ED Console TH Network CO) Sylesstor OD Petomance OE Memory Stooge of Aceniy >> Oo x
-> nti 5 ai o %
-> rated . = sores | + Wheres i
-> © ota sont respite
-> Danse secneuepte
-> Cap cceitenestradheser Resse :
-> Ove Event isterer shin 23
-> on
-> 25 ey igen DOM Mutation restpints
-> Figure 17: Pretty Print Source
-> After clicking the icon, Firefox will display the code in a format that is easier to read and
-> follow:
-> GRO inspector) Const TH reware C SnieFator OD Pertomance OF Memory Stange Acessiy >> O: a x
-> oxtine rey eryniniher 26 a om
-> ° Segoe
-> Figure 18: Viewing Prettified Source in Firefox
-> ```
+> [!info] Pretty-printing minified source
+> Minified code sits on one dense line. Click the Pretty print source button (the `{ }` double-curly-braces icon) in the Debugger to reformat it into readable, indented code.
 
 
-> [!note]- Screenshot
-> ```
-> onsec-We Love SecrityTo x | + 2
-> 7 @ © 8 offsecup et 36 =
-> BWkaiLinac Aka Tools KLKoU Forums Kab Doce GNetHunter AL OffensveSecrty LMSFU #Eplot-0B #:GHOB
-> About Us
-> Re
-> me to put stutt r a
-> Re_ A 2xewordtor tis sare
-> Dicheckspeting
-> Clee Aces Prope
-> Figure 19: Selecting E-mail Input Element
-> This will open the Inspector tool and highlight the HTML for the element we right-clicked
-> on.
-> eee WeloveSeciny To | + ax
-> < 5 @ © B offseenp o eo:
-> BIKGiLne ATKelTools APKaliForums I KaliDocs ENetHunter Offensive Secrty LMSFU ef Exploi- D8 « GHOS
-> About Us
-> Recent Posts
-> R here Je
-> e Doone Dosage tH rerwon (Sekar resemance D weney Gstase ot Accrbiny HE Apter Cntr Dex
-> : +e mw + * OO B Conpted Cheges Fors Bint «
-> — |
-> Figure 20: Using the Inspector Too!
-> This tool can be especially useful for quickly finding hidden form fields in the HTML
-> source.
-> ```
+> [!info] Inspecting a specific element
+> Right-click an element on the page (e.g. a search or e-mail input) and choose Inspect. The Inspector opens with that element's HTML highlighted — a fast way to spot hidden form fields in the source.
 
 ## Visual Flow
 

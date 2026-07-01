@@ -94,14 +94,6 @@ If we can inject these special characters into the page, the browser will treat 
 
 We may need to use different sets of characters, depending on where our input is being included. For example, if our input is being added between div tags, we'll need to include our own script tags and need to be able to inject "<" and ">" as part of the payload. If our input is being added within an existing JavaScript tag, we might only need quotes and semicolons to add our own code.
 
-> [!note]- Screenshot
-> ```
-> The most common special characters used for this purpose include:
-> <> "fas
-> Listing 23 - Special characters for HTML and JavaScript
-> ```
-
-
 ```sh
 < > ' " { } ;
 ```

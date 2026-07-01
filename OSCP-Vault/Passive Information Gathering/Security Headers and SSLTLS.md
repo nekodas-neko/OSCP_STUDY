@@ -18,37 +18,16 @@ Another scanning tool we can use is the SSL Server Test from Qualys SSL Labs. Th
 and check the results.
 [https://www.ssllabs.com/ssltest/](https://www.ssllabs.com/ssltest/)
 
-> [!note]- Screenshot
-> ```
-> Let's scan www.megacorpone.com and check the results.
-> Security Report Summary
-> Figura 15: Scan results for www.megacorpone.com
-> ```
+> [!info] Security Headers scan
+> Enter `www.megacorpone.com` at securityheaders.com to get a "Security Report Summary" — a letter grade plus a breakdown of which HTTP response headers are present and which are missing.
 
 
-> [!note]- Screenshot
-> ```
-> The site is missing several defensive headers, such as Content-Security-Policy and X-
-> Frame-Options. These missing headers are not necessarily vulnerabilities in and of
-> themselves, but they could indicate web developers or server admins that are not
-> familiar with server hardening.
-> ```
+> [!info] Interpreting missing headers
+> The site is missing several defensive headers, such as `Content-Security-Policy` and `X-Frame-Options`. These absences are not vulnerabilities in themselves, but they suggest developers or admins who are not applying server hardening — a hint about the org's overall security maturity.
 
 
-> [!note]- Screenshot
-> ```
-> a Scan Another »
-> ‘igure 16: SSL Server Test results for wwrs.megacorpone.com
-> These results seem better than the Security Headers check. However, this shows that
-> the server supports TLS versions such as 1.0 and 1.1, which are deemed legacy as they
-> implement insecure - this ultimately suggests that our target is not
-> applying current best practices for SSL/TLS hardening. Disabling the
-> TLS_DHE_RSA_WITH_AES_256.CBC_SHA suite has been
-> , for example, due to multiple vulnerabilities both on AES cipher block chaining
-> 
-> mode and the SHA1 algorithm. We can use these findings to gain insights about the
-> security practices, or lack thereof, within the target organization.
-> ```
+> [!info] SSL Server Test results
+> The Qualys SSL Labs scan grades better than the headers check, but still shows the server supporting legacy **TLS 1.0 and 1.1**, so the target is not fully applying current SSL/TLS hardening. Weak suites like `TLS_DHE_RSA_WITH_AES_256_CBC_SHA` are recommended for disabling due to known issues with AES-CBC mode and the SHA-1 algorithm. Findings like these reveal the org's security practices.
 
 ## Visual Flow
 
