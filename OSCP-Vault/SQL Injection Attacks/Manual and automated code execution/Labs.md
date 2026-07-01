@@ -11,41 +11,16 @@ tags:
 ## 1. Connect to the MSSQL VM 1 and enable xp_cmdshell as showcased in this Learning Module. Which MSSQL configuration option needs to be enabled before xp_cmdshell can be turned on?
 
 
-> [!note]- Screenshot
+> [!example] Enabling xp_cmdshell
+> Connect to the MSSQL instance and enable `show advanced options` first, then `xp_cmdshell`, applying each with `RECONFIGURE`:
+> ```sql
+> -- impacket-mssqlclient Administrator:Lab123@192.168.50.18 -windows-auth
+> EXECUTE sp_configure 'show advanced options', 1;
+> RECONFIGURE;
+> EXECUTE sp_configure 'xp_cmdshell', 1;
+> RECONFIGURE;
 > ```
-> In our database, the Administrator user already has the appropriate permissions.
-> Let's enable xp_cmdshell by simulating an SQL injection via the impacket-
-> mssalclient tool.
-> 
-> kaligkali:~§ impacket-mssqlclient Administrator:Lab123@192.168.50.18 -windows-au
-> 
-> th
-> 
-> Impacket v@.9.24 - Copyright 2021 SecureAuth Corporation
-> 
-> SQL> EXECUTE sp_configure ‘show advanced options", 1;
-> 
-> [*] INFO(SQLO1\SQLEXPRESS): Line 185: Configuration option ‘show advanced option
-> 
-> s’ changed from @ to 1. Run the RECONFIGURE statement to install.
-> 
-> SQL> RECONFIGURES
-> 
-> SQL> EXECUTE sp_configure ‘xp_cndshell’, 15
-> 
-> [*] INFO(SQLO1\SQLEXPRESS): Line 185: Configuration option ‘xp_cmdshell’ changed
-> 
-> from @ to 1. Run the RECONFIGURE statement to install.
-> 
-> ‘SQL> RECONFIGURES
-> 
-> Listing 28 - Enabling xp_cmdshell feature
-> 
-> After logging in from our Kali VM to the MSSQL instance, we can enable show
-> advanced options by setting its value to 1, then applying the changes to the
-> running configuration via the RECONFIGURE statement. Next, we'll enable
-> xp_cmdshell and apply the configuration again using RECONFIGURE.
-> ```
+> `xp_cmdshell` cannot be turned on until `show advanced options` is enabled.
 
 
 ## Answer: show advanced options
@@ -216,43 +191,8 @@ Quick Attack Flow:
 ## Question 3: Connect to the MySQL VM 2 and automate the SQL injection discovery via sqlmap as shown in this section. Then dump the users table by abusing the time-based blind SQLi and find the flag that is stored in one of the table's records.
 
 
-> [!note]- Screenshot
-> ```
-> Pretty Raw Hex swe
-> 
-> T POST / HITP/1.1
-> 
-> 2 Host: 192. 168. 105.16
-> 
-> 3 User-Agent: Mozilla/S.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101
-> Firefox/140.0
-> 
-> 4 Accept: text/html, application/xhtnl-+xml, application/xml;q=0.9,*/*;q=0.8
-> 
-> 5 Accept-Language: en-US, en;q=0.5
-> 
-> 6 Accept-Encoding: gzip, deflate, br
-> 
-> 7 Content-Type: application/x-www- form-urlencoded
-> 
-> 8 Content-Length: 26
-> 
-> 9 Origin: http: //192.168. 105.16
-> 
-> 0 Connection: keep-alive
-> 
-> 1 Referer: http: //192.168.105.16/
-> 
-> 2 Cookie: PHPSESSID=2242347a3b4ec76a2b1ce14f.ce1 24068
-> 
-> 3 Upgrade-Insecure-Requests: 1
-> 
-> 4 Priority: u=0, i
-> 
-> S
-> 
-> 6 uide427+0R+1%301 6password=
-> ```
+> [!example] Capturing the login POST in Burp
+> Intercept the login request to `/` against the MySQL VM. The body is URL-encoded and carries the injectable `uid` parameter (here `uid=1 OR 1=1` was tried), plus a `password` field — this is what we save to `req.txt` for sqlmap.
 
 save this to a TXT: (nano req.txt)
 

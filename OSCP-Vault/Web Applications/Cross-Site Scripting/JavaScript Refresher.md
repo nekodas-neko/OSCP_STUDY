@@ -66,14 +66,13 @@ JavaScript's role is to access and modify the page's DOM, resulting in a more in
 
 Like many other programming languages, JavaScript can combine a set of instructions into a function.
 
-> [!note]- Screenshot
-> ```
-> function multiplyValues(x,y) {
-> return x * ys
-> 3
-> let a = multiplyvalues(3, 5)
-> console. 1og(a)
-> Listing 22 - Simple JavaScript Function
+> [!example] Simple JavaScript function
+> ```javascript
+> function multiplyValues(x, y) {
+>     return x * y;
+> }
+> let a = multiplyValues(3, 5);
+> console.log(a);   // 15
 > ```
 
 In Listing 22, we declared a function named multiplyValues on lines 1-3 that accepts two integer values as parameters and returns their product.
@@ -86,19 +85,8 @@ We can verify the above code by opening the developer tools in Firefox on the ab
 
 Once the blank page is loaded, we'll click on the Web Console from the Web Developer sub-menu in the Firefox Menu or use the shortcut C+B+k.
 
-> [!note]- Screenshot
-> ```
-> < @ Q Search with Google or enter address 9Od=
-> ® Kali Linux XX Kali Tools SX Kali Forums [MJ KaliDocs %& NetHunter »
-> CRO Inspector © Debugger TH Network {} StyleEditor >> Gl] -- x
-> iu) Errors Wamings Logs Info Debug CSS XHR Requests Xf
-> » (ay) {
-> }
-> - (3.5)
-> ao
-> Figure 25: Testing the JavaScript Function in the Browser Console
-> From within the Console, we can execute our test function and retrieve the output.
-> ```
+> [!info] Testing in the browser console
+> Open the Firefox Web Console on `about:blank`, paste the function, and call it (e.g. `multiplyValues(3, 5)`). The console prints `15`, confirming your JavaScript ran.
 
 ---
 %% graph-links %%

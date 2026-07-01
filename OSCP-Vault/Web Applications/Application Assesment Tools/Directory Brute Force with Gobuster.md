@@ -76,12 +76,8 @@ flowchart TD
 Once we have discovered an application running on a web server, our next step is to map all its publicly accessible files and directories. To do this, we would need to perform multiple queries against the target to discover any hidden paths. Gobuster is a tool (written in Go language) that can help us with this sort of enumeration. It uses wordlists to discover directories and files on a server through brute forcing.
 [https://www.kali.org/tools/gobuster/](https://www.kali.org/tools/gobuster/)
 
-> [!note]- Screenshot
-> ```
-> © Caution
-> Due to its brute forcing nature, Gobuster may be noisy and unsuitable for stealth
-> engagements.
-> ```
+> [!warning] Caution
+> Because it brute forces one request per wordlist entry, Gobuster is noisy and generally unsuitable for stealth engagements.
 
 Gobuster supports various enumeration modes, including fuzzing and DN
 S, but for now, we’ll focus solely on the dir mode, which enumerates files and directories. 
@@ -105,38 +101,7 @@ gobuster dir -u 192.168.165.16 -w /usr/share/wordlists/dirb/common.txt -b 301 -t
 
 > Used -b 301 to ignore results for 301's
 
-> [!note]- Screenshot
-> ```
-> | kali@kali:~$ gobuster dir -u 192.168.50.20 -w /usr/share/wordlists/dirb/common.txt -t 6 i
-> is H
-> | Gobuster v3.1.0 i
-> | by 03 Reeves (@TheColonial) & Christian Mehlmauer (@firefart) {
-> | [+] uri: http://192.168.50.28 i
-> | [+] Method: GET {
-> | [+] Threads: 5 {
-> | [+] Wordlist: /usr/share/wordlists/dirb/common.txt {
-> | [+] Negative Status codes: 404 {
-> | [4] User agent: gobuster/3.1.0 I
-> | [+] Timeout: es {
-> | 2022/03/30 05:16:21 Starting gobuster in directory enumeration mode i
-> 1 /shta (Status: 403) [Size: 278] {
-> | /.htaccess (Status: 403) [Size: 278] {
-> | /.htpasswd (Status: 403) [Size: 278] {
-> | /css (Status: 301) [Size: 312] [--> http://192.168.50.20/css/] H
-> | /db (Status: 301) [Size: 311] [--> http://192.168.50.20/db/] H
-> | /images (Status: 301) [Size: 315] [--> http://192.168.50.20/images/] i
-> | /index.php (Status: 302) [Size: @] [--> -/login.php] i
-> | is (Status: 301) [Size: 311] [--> http://192.168.50.20/js/] i
-> | /server-status (Status: 403) [Size: 278] i
-> | suploads (Status: 301) [Size: 316] [--> http://192.168.5@.20/uploads/] i
-> | 2022/03/36 @5:18:08 Finished i
-> ——— 6 |
-> Under the /usr/share/wordlists/dirb/ folder we selected the common.txt wordlist,
-> which found ten resources. Four of these resources are inaccessible due to insufficient
-> privileges (Status: 403). However, the remaining six are accessible and deserve further
-> investigation.
-> ```
-
+Using the `common.txt` wordlist found ten resources. Four (e.g. `/.htaccess`, `/.htpasswd`, `/server-status`) returned `403` and are inaccessible; the remaining six — `/css`, `/db`, `/images`, `/index.php` (302 → `/login.php`), `/js`, `/uploads` — are accessible and worth investigating.
 
 ```sh
 gobuster dir -u 192.168.50.20 -w /usr/share/wordlists/dirb/common.txt -t 5

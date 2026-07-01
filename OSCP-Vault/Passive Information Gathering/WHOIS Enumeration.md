@@ -9,162 +9,47 @@ tags:
 
 Whois is a protocol that uses TCP port 43 to communicate with public databases. The whois tool queries the databases to retrieve domain registration records.
 
-> [!note]- Screenshot
-> ```
-> WHOIS records typically include information such as:
-> 
-> + Name Server: These servers are part of the Domain Name System (DNS) and help
-> translate domain names into IP addresses, directing traffic to the appropriate web
-> server.
-> 
-> + Registrar The company through which the domain name was registered. Examples
-> include GoDaddy, Namecheap, and Gandi.
-> 
-> + Registrant Contact. The individual or organization that legally owns the domain. This
-> may include a name, organization, email, and phone number.
-> 
-> + Administrative Contact: The person responsible for managing domain ownership and
-> access. Often the main point of contact for domain changes.
-> 
-> + Technical Contact. The individual or team that manages the domain's technical setup,
-> such as DNS records or server integration.
-> 
-> * Creation and Expiration Dates: When the domain was first registered and when it is
-> set to expire. This helps assess how long a domain has been active.
-> 
-> + Domain Status: Flags that indicate whether the domain is locked, active, or in transfer
-> 
-> This information is often public, since registrars charge a fee for private registration.
-> ```
+> [!info] What WHOIS records contain
+> - **Name Server** – DNS servers that resolve the domain (e.g. NS1.MEGACORPONE.COM).
+> - **Registrar** – company the domain was registered through (GoDaddy, Namecheap, Gandi).
+> - **Registrant contact** – legal owner: name, organization, email, phone.
+> - **Administrative contact** – manages ownership/access and domain changes.
+> - **Technical contact** – manages DNS records and server infrastructure.
+> - **Creation / Expiration dates** – shows how long the domain has been active.
+> - **Domain status** – flags like locked, active, or in transfer.
+>
+> Much of this is public unless the owner pays the registrar for private registration.
 
 
-> [!note]- Screenshot
+> [!example] Forward lookup (domain → records)
 > ```
-> kaligkali:~$ whois megacorpone.com -h 192.168.50.251
-> Domain Name: MEGACORPONE.COM
-> Registry Domain ID: 1775445745 DOMAIN_COM-VRSN
+> kali@kali:~$ whois megacorpone.com -h 192.168.50.251
+> Domain Name:            MEGACORPONE.COM
 > Registrar WHOIS Server: whois.gandi.net
-> Registrar URL: http://me.gandi.net
-> Updated Date: 2019-01-01709:45:032,
-> Creation Date: 2013-01-22723:01:002
-> Registry Expiry Date: 2023-01-22123:01:00Z
-> 
-> Registry Registrant ID:
-> 
-> Registrant Nane: Alan Grofield
-> 
+> Creation Date:          2013-01-22
+> Registry Expiry Date:   2023-01-22
+> Registrant Name:        Alan Grofield
 > Registrant Organization: MegaCorpOne
-> 
-> Registrant Street: 2 Old Mill St
-> 
-> Registrant City: Rachel
-> 
-> Registrant State/Province: Nevada
-> 
-> Registrant Postal Code: 89001
-> 
-> Registrant Country: US
-> 
-> Registrant Phone: +1.9038836342
-> 
-> Registry Admin 1D:
-> 
-> Admin Name: Alan Grofield
-> 
-> ‘Admin Organization: MegaCorpOne
-> 
-> Adnin Street: 2 Old Mill St
-> 
-> ‘Adnin City: Rachel
-> 
-> ‘Admin State/Province: Nevada
-> 
-> ‘Admin Postal Code: 89001
-> 
-> ‘Admin Country: US
-> 
-> ‘Admin Phone: +1.9038836342
-> 
-> Registry Tech 1D:
-> 
-> Tech Name: Alan Grofield
-> 
-> Tech Organization: MegaCorpOne
-> 
-> Tech Street: 2 Old Mill st
-> 
-> Tech City: Rachel
-> 
-> Tech State/Province: Nevada
-> 
-> Tech Postal Code: 39001
-> 
-> Tech Country: US
-> 
-> Tech Phone: +1.9038836342
-> 
-> Name Server: NS1.HEGACORPONE.COM
-> 
-> Name Server: NS2.HEGACORPONE.COM
-> 
-> Name Server: NS3.MEGACORPONE.COM
-> 
-> Listing 2 - WHOIS forward lookup for megacorpone.com
+> Registrant Phone:       +1.9038836342
+> Admin/Tech Contact:     Alan Grofield (same as registrant)
+> Name Server:            NS1/NS2/NS3.MEGACORPONE.COM
 > ```
+> A single record hands you the registrar, dates, name servers, and a real contact name to pivot on.
 
 
-> [!note]- Screenshot
-> ```
-> Not all this data is useful, but we did discover some valuable information.
-> 
-> + Registrant: Who legally owns the domain. (Alan Grofield)
-> 
-> + Admin Contact: The person managing administrative access. (Alan Grofield)
-> 
-> + Technical Contact: The person managing DNS, infrastructure, etc. (Alan Grofield)
-> 
-> + Name Server: Helps direct internet traffic by translating domain names into IP
-> addresses. (NS1.MEGACORPONE.COM)
-> 
-> According to the Megacorp One Contact page, Alan is the "IT and Security Director".
-> ```
+> [!info] Useful findings
+> The registrant, admin, and technical contacts are all **Alan Grofield**, and the name servers are NS1–NS3.MEGACORPONE.COM. Per MegaCorp One's contact page, Alan is the "IT and Security Director" — a strong lead for people-focused OSINT.
 
 
-> [!note]- Screenshot
+> [!example] Reverse lookup (IP → owner)
 > ```
-> Assuming we have an IP address, we can also use the whois client to perform a reverse
-> lookup and gather more information.
-> 
 > kali@kali:~$ whois 38.100.193.70 -h 192.168.50.251
-> 
-> NetRange: -38.0.0.0 - 38.255.255.255
-> 
-> cpr: 38.0.0.0/8
-> 
-> NetName: ‘COGENT-A
-> 
-> Orgid: PSE
-> 
-> Address: 2450 N Street Ni
-> 
-> City: Washington
-> 
-> StateProv: OC
-> 
-> PostalCode: 20037
-> 
-> Country: us
-> 
-> RegDate:
-> 
-> Updated: 2015-06-04
-> 
-> isting 3= WHOIS reverse lookup for IP 38.100.193.70
-> 
-> The reverse WHOIS lookup reveals that this IP address falls within the 38.0.0.0/8 CIDR
-> block — a large subnet range — and is registered to PSINet, Inc., the ISP hosting that
-> address.
+> NetRange:  38.0.0.0 - 38.255.255.255
+> CIDR:      38.0.0.0/8
+> NetName:   COGENT-A
+> Address:   2450 N Street NW, Washington, DC 20037, US
 > ```
+> The IP falls in the large 38.0.0.0/8 block registered to the ISP (PSINet/Cogent) hosting the address — useful for mapping netblocks.
 
 ## Visual Flow
 

