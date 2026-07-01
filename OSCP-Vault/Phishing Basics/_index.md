@@ -13,6 +13,15 @@ tags:
 >
 > ⬆ Up: [[🏠 Home]]
 
+## Overview
+
+Phishing blends technical delivery with social manipulation. Two flavors:
+- **Broad phishing** — mass, generic messages cast at many targets (a numbers game).
+- **Spear phishing** — personalized attacks against specific individuals, built from recon into their behaviors, preferences, and vulnerabilities.
+
+> [!tip] Generative AI is changing the tradeoff
+> LLMs process public data to find and profile targets fast, closing the effort gap between broad and spear phishing. Voice-cloning and deepfake video extend this into vishing and video-based pretexts — making AI-augmented phishing both more convincing and harder to catch.
+
 ## Subsections
 - 📁 [[Phishing Basics/Phishing 101/_index|Phishing 101]] — channels & social engineering
 - 📁 [[Phishing Basics/Payloads, misdirection, and speedbumps/_index|Payloads, misdirection, and speedbumps]] — filters, macros, files, links, MFA
