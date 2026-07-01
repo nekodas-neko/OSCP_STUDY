@@ -1,0 +1,7 @@
+# Obsidian per-machine settings & cache — keep local, never sync via git
+.obsidian/
+.trash/
+
+# OS cruft
+.DS_Store
+Thumbs.db
