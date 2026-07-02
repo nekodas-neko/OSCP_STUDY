@@ -17,6 +17,10 @@ tags:
 > | Running processes | `snmpwalk -c public -v1 <IP> 1.3.6.1.2.1.25.4.2.1.2` |
 > | Open TCP ports | `snmpwalk -c public -v1 <IP> 1.3.6.1.2.1.6.13.1.3` |
 > | Brute community strings | `onesixtyone -c /usr/share/seclists/Discovery/SNMP/common-snmp-community-strings.txt <IP>` |
+> | Clean summary tool | `snmp-check <IP> -c public` |
+> | Faster walk (v2c, bulk) | `snmpbulkwalk -c public -v2c <IP> 1.3.6.1` |
+> | Nmap SNMP NSE sweep | `nmap -sU -p 161 --script snmp-sysdescr,snmp-processes,snmp-netstat,snmp-interfaces <IP>` |
+> | SNMPv3 (no community string) | `snmpwalk -v3 -l authPriv -u <user> -a SHA -A <authpass> -x AES -X <privpass> <IP>` |
 
 ## Decision Tree
 
@@ -69,6 +73,8 @@ flowchart TD
 > - `Timeout: No Response from <IP>` → wrong community string or SNMP not listening on UDP 161; bump `-t 10` and brute strings with onesixtyone.
 > - No output but no error → you used the wrong SNMP version; SNMP v1 devices need `-v1`, v2c needs `-v2c`.
 > - `snmpwalk: Unknown host` / OID errors → quote or fully type the OID; install `snmp-mibs-downloader` if you want named OIDs instead of numbers.
+> - `No Such Object available on this agent at this OID` / `No Such Instance currently exists at this OID` → not an error, it means you walked past the end of that branch or the OID doesn't exist on this device; try a parent OID or a full `1.3.6.1` walk to see what's actually populated.
+> - `snmpwalk` works but `onesixtyone` finds nothing → community strings differ per-host; also confirm UDP/161 isn't being dropped by a firewall (`sudo nmap -sU -p161 <IP>` should show `open`, not `open|filtered`).
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note

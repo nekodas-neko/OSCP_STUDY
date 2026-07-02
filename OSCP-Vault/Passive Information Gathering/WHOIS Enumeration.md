@@ -7,6 +7,17 @@ tags:
 
 # WHOIS Enumeration
 
+> [!tip] Quick Reference
+> | Goal | Command |
+> |------|---------|
+> | Forward lookup (domain → records) | `whois megacorpone.com` |
+> | Forward lookup via specific server | `whois megacorpone.com -h whois.iana.org` |
+> | Reverse lookup (IP → owner) | `whois 38.100.193.70` |
+> | RDAP lookup (modern JSON alternative) | `curl -s https://rdap.org/domain/megacorpone.com \| jq` |
+> | Quick DNS sanity check alongside whois | `dig megacorpone.com any +noall +answer` |
+> | Install whois if missing | `sudo apt install whois` |
+> | Web-based whois (bypasses local rate limits) | [who.is](https://who.is/) or [lookup.icann.org](https://lookup.icann.org/) |
+
 Whois is a protocol that uses TCP port 43 to communicate with public databases. The whois tool queries the databases to retrieve domain registration records.
 
 > [!info] What WHOIS records contain
@@ -69,12 +80,18 @@ flowchart TD
 
 > [!danger] Common errors
 > - `No whois server is known for this kind of object` → tell whois which server to use: `whois -h whois.iana.org domain.com` (or the `-h 192.168.50.251` server used in the lab).
-> - Records look empty or show "REDACTED FOR PRIVACY" → the registrar hides personal data under GDPR/privacy; try the registrar's own web whois or pivot to other OSINT sources.
+> - Records look empty or show "REDACTED FOR PRIVACY" → the registrar hides personal data under GDPR/privacy; try the registrar's own web whois, RDAP (`curl https://rdap.org/domain/<domain>`), or pivot to other OSINT sources.
 > - Querying a domain with `https://` or a trailing path → use the bare domain only (`megacorpone.com`, not `https://megacorpone.com/`).
+> - `command not found: whois` → not installed by default on every distro; `sudo apt install whois`.
+> - `Query rate limit exceeded` / connection refused after several lookups → some registrar whois servers rate-limit by source IP; wait a bit, query a different registrar's server with `-h`, or use a web whois front-end (who.is, ICANN Lookup) instead.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
-> WHOIS is **passive** — you query a public registration database over TCP port 43, never the target's own servers. So it is stealthy and safe to run early. A *forward* lookup goes domain → details; a *reverse* lookup goes IP → owner.
+> WHOIS is **passive** — you query a public registration database over TCP port 43, never the target's own servers. So it is stealthy and safe to run early. A *forward* lookup goes domain → details; a *reverse* lookup goes IP → owner. **RDAP** is the modern, structured (JSON) successor to WHOIS — same idea, easier to parse, and increasingly what registrars point you to as WHOIS is phased out.
+
+## Resources
+- [ICANN Lookup (WHOIS/RDAP)](https://lookup.icann.org/)
+- [rdap.org](https://rdap.org/)
 
 ---
 %% graph-links %%

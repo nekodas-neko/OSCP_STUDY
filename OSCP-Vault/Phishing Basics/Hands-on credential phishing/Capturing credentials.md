@@ -13,6 +13,8 @@ tags:
 > |-----------|---------|------|
 > | Cloned login page | `sudo python3 -m http.server 80` | 80 |
 > | Credential capture server | `python3 cred_server.py` | 8080 |
+> | Test the listener directly | `curl -X POST -d "email=test@test.com&password=test123" http://127.0.0.1:8080/creds -v` | — |
+> | Find/kill whatever owns a port | `sudo lsof -i :8080` → `sudo kill <PID>` | — |
 
 ## Visual Flow
 
@@ -76,6 +78,28 @@ Browse to `http://127.0.0.1/signin.html`, enter test credentials, and submit. Af
     Email:    test@test.com
     Password: test123
 ```
+
+> [!danger] `OSError: [Errno 98] Address already in use`
+> Either server can hit this — port 80 is a common squatter if a previous [[Cloning a legitimate website]] preview session was never killed, and 8080 is a common default for other local tooling. Fix:
+> ```bash
+> sudo lsof -i :80          # or :8080
+> sudo kill <PID>
+> ```
+> `sudo ss -tlnp | grep :80` works as a quick alternative to check what's bound before killing anything.
+
+> [!danger] Form submits but nothing shows up in the capture server's terminal
+> Almost always one of these:
+> - `cred_server.py` isn't actually running yet, or was started **after** the form was submitted — start it first, every time.
+> - The form's `action` in the injected overlay still points at a stale host/port that doesn't match where `cred_server.py` is listening.
+> - A local firewall is blocking the port: `sudo ufw allow 8080/tcp` (or disable ufw for lab testing).
+> - Browser dev tools (Network tab) show the actual POST request and response code — check that first before assuming the Python script is broken.
+
+> [!tip] Persist captures to disk, not just the terminal
+> A closed terminal loses every credential printed to it. Append a line to the handler to keep a permanent log:
+> ```python
+> with open('creds.log', 'a') as f:
+>     f.write(f'{email}:{password}\n')
+> ```
 
 > [!warning] Before a real engagement
 > Replace **every** instance of `127.0.0.1` — both in the password form's `action` (inside the modification script from [[Cleaning up the clone]]) and wherever the credential server is reached from — with your actual Kali machine's reachable IP address. Nothing in this chain works outside local testing until that's done.

@@ -17,6 +17,11 @@ tags:
 > | Nmap SMB scripts | `nmap -p 445 --script smb-enum-shares,smb-enum-users <IP>` |
 > | Check vuln (EternalBlue) | `nmap -p 445 --script smb-vuln-ms17-010 <IP>` |
 > | CrackMapExec sweep | `crackmapexec smb <IP>/24` |
+> | rpcclient null session | `rpcclient -U "" -N <IP>` |
+> | smbmap share enum | `smbmap -H <IP> -u null -p ""` |
+> | enum4linux-ng (JSON-friendly) | `enum4linux-ng -A <IP>` |
+> | Force SMBv1 | `smbclient -L //<IP>/ -N -m NT1` |
+> | Mount a share locally | `sudo mount -t cifs //<IP>/<share> /mnt/smb -o username=guest,password=` |
 
 ## Decision Tree
 
@@ -56,8 +61,12 @@ flowchart TD
 
 > [!danger] Common errors
 > - `NT_STATUS_ACCESS_DENIED` → you need creds; try null `-N` first, then known users.
-> - `protocol negotiation failed` → modern client refuses SMBv1. Add `--option='client min protocol=NT1'`.
+> - `protocol negotiation failed` → modern client refuses SMBv1. Add `--option='client min protocol=NT1'` (or `-m NT1` for a short connection).
 > - `NT_STATUS_LOGON_FAILURE` → wrong creds; try empty `''` or `guest`.
+> - `enum4linux`/`smbclient` hangs with no output for a long time → port 445/139 is likely firewalled or the host is down; re-confirm with `nmap -p 139,445 <IP>` before assuming a tool bug.
+> - `rpcclient` connects but `enumdomusers` returns `NT_STATUS_ACCESS_DENIED` → anonymous RID cycling is disabled (common on hardened/modern DCs); fall back to whatever creds you have.
+> - `mount error(112): Host is down` or `mount error(13): Permission denied` on `mount -t cifs` → add `vers=1.0` (or `2.0`) to `-o` for legacy servers, and remember `mount` needs `sudo`.
+> - `smbclient: command not found` / `enum4linux: command not found` → install with `sudo apt install smbclient enum4linux` (or `enum4linux-ng` via `pip`/`apt`).
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -101,6 +110,33 @@ ls -1 /usr/share/nmap/scripts/smb*
 
 > [!info] SMBv1 requirement
 > The SMB discovery script only works when SMBv1 is enabled on the target. SMBv1 is disabled by default on modern Windows, but many legacy systems still run it.
+
+> [!tip] enum4linux flag breakdown
+> `-a` (used above) runs everything, but individual flags are handy when `-a` is slow or noisy:
+> | Flag | Gets |
+> |------|------|
+> | `-U` | Users via RID cycling |
+> | `-S` | Shares |
+> | `-G` | Groups |
+> | `-P` | Password policy |
+> | `-o` | OS info |
+> | `-i` | Printer info |
+> | `-N` | Null session share enum (no creds) |
+> ```bash
+> enum4linux -U -S -P <IP>
+> ```
+
+> [!example] `rpcclient` gives an interactive RPC shell over a null session — useful when `enum4linux` hangs or is filtered. Common in-session commands: `enumdomusers`, `enumdomgroups`, `querydominfo`, `srvinfo`, `netshareenumall`:
+> ```bash
+> rpcclient -U "" -N 192.168.50.152
+> rpcclient $> enumdomusers
+> rpcclient $> querydominfo
+> ```
+
+> [!example] `smbmap` gives a quick, readable summary of share names and your access level (READ/WRITE) in one line per share — often faster to eyeball than `smbclient -L`:
+> ```bash
+> smbmap -H 192.168.50.152 -u null -p ""
+> ```
 
 
 The `smb-os-discovery` script reveals OS, computer name, domain/forest name, and FQDN (e.g. `client01.megacorptwo.com`). Note the OS guess can be off — here it reported Windows 10 for a Windows 11 host:

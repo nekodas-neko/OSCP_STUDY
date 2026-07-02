@@ -5,6 +5,17 @@ tags:
 
 # Debugging Page Content
 
+> [!tip] Quick Reference — Page Content Inspection
+> | Goal | Shortcut / Command |
+> |------|---------------------|
+> | Open dev tools | F12 or Ctrl+Shift+I |
+> | Raw page source (as server sent it) | Ctrl+U, or `curl -s http://<IP>/` |
+> | JS sources (Debugger tab) | Web Developer menu → Debugger |
+> | Pretty-print minified JS | `{ }` button in Debugger |
+> | Inspect a specific element | Right-click element → Inspect |
+> | Grep a JS file for endpoints/secrets (CLI) | `curl -s http://<IP>/app.js \| grep -iE 'api\|key\|token\|secret\|http'` |
+> | Mirror all JS/CSS for offline grepping | `wget -r -l1 -A.js,.css http://<IP>/` |
+
 A good place to start our web application information mapping is with a URL address. File extensions, which are sometimes part of a URL, can reveal the programming language the application was written in. Some extensions, like .php, are straightforward, but others are more cryptic and vary based on the frameworks in use. For example, a Java-based web application might use .jsp, .do, or .html.
 
 File extensions on web pages are becoming less common, however, since many languages and frameworks now support the concept of routes, which allow developers to map a URI to a section of code. Applications leveraging routes use logic to determine what content is returned to the user, making URI extensions largely irrelevant.
@@ -29,6 +40,13 @@ We can also use the Inspector tool to drill down into specific page content. Let
 
 > [!info] Inspecting a specific element
 > Right-click an element on the page (e.g. a search or e-mail input) and choose Inspect. The Inspector opens with that element's HTML highlighted — a fast way to spot hidden form fields in the source.
+
+> [!tip] Automating the search with grep
+> Manually scrolling through the Debugger doesn't scale once a page loads several JS bundles. Pull the files with curl/wget and grep them for anything interesting instead:
+> ```sh
+> curl -s http://<IP>/js/app.js | grep -iE 'api[_-]?key|token|secret|password|/api/|endpoint'
+> ```
+> This regularly turns up hardcoded API keys, internal endpoint paths, or debug flags developers forgot to strip from a production build.
 
 ## Visual Flow
 

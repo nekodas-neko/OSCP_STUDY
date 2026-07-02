@@ -10,7 +10,7 @@ tags:
 > [!tip] Quick Reference — File Upload
 > | Bypass | Technique |
 > |--------|-----------|
-> | Extension filter | `.php5`, `.phtml`, `.phar`, `.php.jpg` |
+> | Extension filter | `.php5`, `.phtml`, `.phar`, `.pht`, `.php.jpg` |
 > | MIME type | Change Content-Type to `image/jpeg` in Burp |
 > | Magic bytes | Prepend `GIF89a` or `ÿØÿ` to PHP file |
 > | Double extension | `shell.php.jpg` (if server executes first ext) |
@@ -95,6 +95,15 @@ One method to bypass this filter is to change the file extension to a less-commo
 
 > [!info] Case-variation bypass
 > A blacklist that only matches lower-case extensions can be beaten by changing the case. Renaming `simple-backdoor.php` to `simple-backdoor.pHP` passes the filter — "File simple-backdoor.pHP has been uploaded in the uploads directory". The message also confirms the files land in an `uploads` directory.
+
+
+> [!example] Content-Type / MIME bypass in Burp
+> If the server checks the multipart `Content-Type` header instead of (or in addition to) the extension, intercept the upload in Burp Proxy/Repeater and edit the part header before forwarding:
+> ```
+> Content-Disposition: form-data; name="file"; filename="shell.php"
+> Content-Type: image/jpeg
+> ```
+> Keep the filename as `.php` (or a working bypass extension) — only the declared MIME type changes. Combine with magic bytes (prepend `GIF89a;` to the file contents) if the server also sniffs the first few bytes rather than trusting the header.
 
 
 Browse to the uploaded webshell and pass a command via `cmd` to confirm execution. `cmd=dir` returns a directory listing of `C:\xampp\htdocs\meteor\uploads`, confirming code execution on the target:

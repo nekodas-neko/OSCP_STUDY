@@ -18,6 +18,7 @@ tags:
 > | Reply | **Reply to sender and all recipients** — inherits the real recipient list |
 > | Add the link | Switch to HTML mode → select text → Insert/Edit Link → malicious URL |
 > | Send | Off it goes |
+> | Scripted alternative | `swaks --to <target> --from <sender> --server <mail-server> --header "Subject: ..." --body body.html` | For scaling past a single manual reply |
 
 ## Visual Flow
 
@@ -58,6 +59,31 @@ Plain text mode can't create a clickable hyperlink — switch to **HTML mode** f
 
 > [!tip] Lab constraint vs. real engagement
 > The lab can't use a real domain due to DNS limitations, so the raw IP has to stand in as the link. In an actual campaign, **never ship a raw IP** — host the clone on a domain that visually matches the pretext (a look-alike domain, per [[Email phishing]]). A bare IP address in a hyperlink is an immediate, obvious red flag that a raw-IP-only lab environment doesn't have to worry about.
+
+## Alternative: sending from the command line with swaks
+
+The webmail UI works fine for a single reply-to-thread send, but a broader campaign (many recipients, templated pretexts) is usually scripted instead. `swaks` (Swiss Army Knife for SMTP) is the standard tool for this:
+
+```bash
+swaks --to sales-team@corp.com \
+      --from helpdesk@mail.corp.com \
+      --server mail.corp.com \
+      --header "Subject: Reminder: Please Log In to Keep Your Zoom License!" \
+      --add-header "Content-Type: text/html" \
+      --body body.html \
+      --auth LOGIN --auth-user helpdesk@mail.corp.com --auth-password '<leaked-password>'
+```
+
+> [!tip] Handy swaks variations
+> - `--data email.txt` sends a fully pre-built raw message (headers + body) instead of building it from flags — useful for preserving `In-Reply-To`/`References` headers so the send still looks like a thread reply.
+> - `--header "X-Mailer: Microsoft Outlook 16.0"` and similar header spoofing can help a message blend in with the org's normal mail client fingerprint.
+> - Always dry-run with `--server 127.0.0.1 --port 2525` against a local test listener (`swaks --server 127.0.0.1 --port 2525 ...` + `nc -lvnp 2525`) before pointing at the real mail server.
+
+> [!danger] The email sends but lands in spam/junk
+> Common causes and fixes:
+> - **Missing or misaligned SPF/DKIM/DMARC** on the sending domain — check before sending: `dig txt corp.com +short` (SPF) and `dig txt _dmarc.corp.com +short` (DMARC policy). A compromised legitimate mailbox (like this one) already has these correctly configured, which is a big part of why it beats a look-alike domain — see [[Understanding the role of inbound email filters]].
+> - **Spam-trigger wording** — excessive urgency language, ALL CAPS subject lines, or a mismatched `From`/`Reply-To` pair.
+> - **Broken thread headers** when scripting a reply — losing `In-Reply-To`/`References` makes the message look like a fresh, unsolicited email instead of a continuation, which some filters weight into their spam score.
 
 ## Closing the loop
 

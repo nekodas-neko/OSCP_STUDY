@@ -89,6 +89,12 @@ Rather than trying to freehand a matching tone, feed the **real email** to an LL
 > ```
 > Same voice, same structure, same soft-urgency close — just refreshed and carrying the malicious hyperlink. Minor tweaks may still be needed to fully match the original's structure.
 
+> [!warning] LLM guardrails can refuse the request outright
+> Mainstream LLMs (ChatGPT, Claude, Gemini) commonly refuse prompts that explicitly name themselves as phishing, malware, or social-engineering content. Notice the prompt above never uses the word "phishing" — it just asks for a similarly-styled reminder email with a login link, which reads as ordinary business correspondence. If a request gets refused:
+> - Strip any wording that reads as malicious intent (without misrepresenting the actual use in a way that would violate your engagement's own rules).
+> - Frame the ask as tone-matching/copywriting rather than "write me a scam email."
+> - As a fallback for authorized engagements, a locally-hosted or uncensored model avoids provider-side guardrails entirely — see [[LLMs, generative AI and deepfakes]].
+
 ## Why this pretext is so strong
 
 Every earlier concept converges here:

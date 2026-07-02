@@ -123,6 +123,18 @@ SELECT * FROM offsec.dbo.users;                   -- admin/lab, guest/guest
 
 The users table contains the columns, user, and password, and two rows. Our query returned the clear text password for both usernames.
 
+> [!tip] Check your privileges before chasing code execution
+> Knowing which account you're querying as tells you upfront whether `xp_cmdshell` or `INTO OUTFILE` (see [[Manual code execution]]) will even be reachable.
+> ```sql
+> -- MySQL: current user + granted privileges
+> SELECT current_user();
+> SHOW GRANTS FOR CURRENT_USER();
+>
+> -- MSSQL: current login + sysadmin check (1 = yes)
+> SELECT SYSTEM_USER;
+> SELECT IS_SRVROLEMEMBER('sysadmin');
+> ```
+
 Having covered the basic syntax peculiarities for MySQL and MSSQL databases, next, we'll learn how to manually exploit SQL injection vulnerabilities.
 
 ## EXAMPLE:
@@ -276,6 +288,8 @@ flowchart TD
 > - `ERROR 2026 (HY000)` TLS/SSL error on MySQL connect → append `--skip-ssl` (or `--skip-ssl-verify-server-cert`).
 > - "No database selected" → you forgot `USE <db>;` before your `SELECT`.
 > - On MSSQL, asking for the "first" row without `ORDER BY` is unreliable — SQL Server does not guarantee row order; always use `SELECT *` and read the first listed row.
+> - `ERROR 1045 (28000): Access denied for user 'x'@'y'` on MySQL → wrong credentials, or the account is restricted to a specific host (check `SELECT host FROM mysql.user WHERE user='x';` — a row of `localhost` won't accept a remote connection).
+> - `Login failed for user '...'` on MSSQL → wrong auth mode; toggle `-windows-auth` on/off depending on whether the account is a domain/local Windows account or a native SQL login.
 > - Quote/special-character issues when pasting payloads → see [[🔣 Encoding Reference]].
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 

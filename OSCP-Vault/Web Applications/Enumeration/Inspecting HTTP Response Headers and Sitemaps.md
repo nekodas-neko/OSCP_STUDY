@@ -10,6 +10,16 @@ tags:
 
 # Inspecting HTTP Response Headers and Sitemaps
 
+> [!tip] Quick Reference — Headers & Sitemaps
+> | Goal | Command |
+> |------|---------|
+> | Headers only | `curl -I http://<IP>` |
+> | Headers only, ignore bad cert | `curl -Ik https://<IP>` |
+> | Full response incl. headers | `curl -i http://<IP>` |
+> | robots.txt | `curl http://<IP>/robots.txt` |
+> | sitemap.xml | `curl http://<IP>/sitemap.xml` |
+> | Follow redirects while showing headers | `curl -iL http://<IP>` |
+
 We can also search server responses for additional information. There are two types of tools we can use to accomplish this task. The first type is a proxy, like Burp Suite, which intercepts requests and responses between a client and a web server, and the other is the browser's own Network tool.
 
 We can launch it from the Firefox Web Developer menu to review HTTP requests and responses. This tool shows network activity that occurs after it launches, so we must refresh the page to display traffic.
@@ -65,6 +75,22 @@ Disallow: /index.html?
 ...
 ```
 
+Sitemaps live at a separate, conventional path (`sitemap.xml`, sometimes referenced from `robots.txt` via a `Sitemap:` line). Fetch it the same way:
+
+```sh
+curl http://<IP>/sitemap.xml
+```
+
+Sample output — a list of every URL the site wants indexed, which doubles as a free map of the application:
+
+```xml
+<urlset>
+  <url><loc>http://target/index.php</loc></url>
+  <url><loc>http://target/products.php</loc></url>
+  <url><loc>http://target/admin/login.php</loc></url>
+</urlset>
+```
+
 ## Visual Flow
 
 ```mermaid
@@ -85,7 +111,7 @@ flowchart TD
 > [!danger] Common errors
 > - `curl: (60) SSL certificate problem` on HTTPS labs → add `-k` to skip cert verification: `curl -Ik https://IP`.
 > - `-I` shows nothing useful → some servers reject HEAD; try `curl -i http://IP` (lowercase, full GET with headers).
-> - robots.txt returns 404 → not every site has one; that is fine, move on to gobuster.
+> - robots.txt or sitemap.xml returns 404 → not every site has one; that is fine, move on to gobuster.
 > - Network tab empty → it only records after it opens; refresh the page (F5).
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 

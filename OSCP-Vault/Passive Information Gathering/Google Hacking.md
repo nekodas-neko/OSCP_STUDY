@@ -8,6 +8,22 @@ tags:
 
 # Google Hacking
 
+> [!tip] Quick Reference — Google Dorks
+> | Goal | Query |
+> |------|-------|
+> | Scope to a domain | `site:megacorpone.com` |
+> | Restrict by file type | `site:megacorpone.com filetype:txt` |
+> | Exclude a file type | `site:megacorpone.com -filetype:html` |
+> | Match a phrase in the title | `intitle:"index of"` |
+> | Match a phrase in the body | `intext:"password"` |
+> | Match a phrase in the URL | `inurl:admin` |
+> | Match a phrase in link text | `inanchor:"login"` |
+> | Either term (OR) | `site:megacorpone.com login \| admin` |
+> | Multiple domains at once | `site:megacorpone.com OR site:megacorptwo.com` |
+> | Exact phrase | `"MegaCorp One"` |
+> | All dork ideas for a target | [exploit-db.com/google-hacking-database](https://www.exploit-db.com/google-hacking-database) |
+> | Archived version of a page | `web.archive.org/web/*/megacorpone.com` |
+
 At the heart of this technique is using clever search strings and operators for the creative refinement of search queries, most of which work with a variety of search engines. The process is iterative, beginning with a broad search, which is narrowed using operators to sift out irrelevant or uninteresting results.
 
 
@@ -64,6 +80,22 @@ These basic examples only scratch the surface of what we can do with search oper
 > ```
 > This matches pages with "index of" in the title and "parent directory" in the body — classic exposed directory listings.
 
+
+> [!example] The `inurl:` and `intext:` operators
+> Find pages by matching a phrase in the URL or body text instead of the title:
+> ```
+> site:megacorpone.com inurl:admin
+> site:megacorpone.com intext:"internal use only"
+> ```
+> Handy for spotting admin/login panels (`inurl:`) or leaked internal documents (`intext:`).
+
+
+> [!example] Combining terms with OR (`|`)
+> Search for either term in one query instead of running two separate dorks:
+> ```
+> site:megacorpone.com inurl:login | inurl:admin | inurl:portal
+> ```
+
 ## Visual Flow
 
 ```mermaid
@@ -83,10 +115,16 @@ flowchart TD
 > - Putting a space after the colon → `site: megacorpone.com` fails; it must be `site:megacorpone.com` with no space.
 > - Quoting the whole query instead of just the phrase → use quotes only around exact phrases: `intitle:"index of"`, not `"site:megacorpone.com filetype:txt"`.
 > - Getting rate-limited / CAPTCHA after many dorks → slow down, vary queries, or use the GHDB (exploit-db.com/google-hacking-database) for proven examples.
+> - Using `cache:` and getting nothing → Google **deprecated the `cache:` operator in 2024**; it no longer returns cached pages. Use the [Wayback Machine](https://web.archive.org/) (`web.archive.org/web/*/megacorpone.com`) instead.
+> - Results don't match what's live on the site now → Google's index can lag the real site by days/weeks; treat hits as leads and confirm against the live page (or the Wayback Machine) before relying on them.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
-> Google Hacking ("dorking") is **passive** — you are searching Google's index, not touching the target's server. Operators like `site:`, `filetype:`, `intitle:` and the minus sign (`-`) for exclusion are just filters that narrow a broad search down to interesting files.
+> Google Hacking ("dorking") is **passive** — you are searching Google's index, not touching the target's server. Operators like `site:`, `filetype:`, `intitle:`, `inurl:`, `intext:` and the minus sign (`-`) for exclusion are just filters that narrow a broad search down to interesting files. Search engines have their own equivalents: DuckDuckGo and Bing both support `site:`, `filetype:`, and `intitle:` too, and are worth trying if Google throttles you.
+
+## Resources
+- [Google Hacking Database (GHDB)](https://www.exploit-db.com/google-hacking-database)
+- [Wayback Machine](https://web.archive.org/) — view stale/removed pages Google won't serve via `cache:` anymore
 
 ---
 %% graph-links %%

@@ -47,6 +47,14 @@ Several Office apps support **VBA (Visual Basic for Applications)**, a built-in 
 > [!example] Mark of the Web in practice
 > A file (`wincalc.exe`, in this case) downloaded via a browser into `Downloads` shows a **Security** notice in its Properties dialog: *"This file came from another computer and might be blocked to help protect this computer,"* with an **Unblock** checkbox. That checkbox is the user-facing control for MotW — checking it strips the flag and lets the file run without the warning. Office documents carry the same flag and trigger Protected View instead.
 
+> [!tip] Checking/clearing MotW from PowerShell
+> Useful when testing your own payload delivery, or verifying whether a file on a compromised host was actually downloaded from the internet:
+> ```powershell
+> Get-Item -Path .\file.docx -Stream Zone.Identifier    # shows the MotW stream if present
+> Get-Content -Path .\file.docx -Stream Zone.Identifier  # prints its contents (ZoneId=3 = internet)
+> Unblock-File -Path .\file.docx                         # strips MotW, same effect as the GUI checkbox
+> ```
+
 > [!info] Known bypass
 > CVE-2022-41091 allowed bypassing MotW — but Microsoft patches these gaps quickly once discovered, so bypasses of this kind shouldn't be relied on as a durable technique.
 
@@ -58,6 +66,8 @@ Macro-based phishing is trending toward obsolete against modern, well-configured
 
 > [!success] What a working macro phish looks like today
 > Realistically, it only lands against outdated Office installs or organizations with permissive/absent macro Group Policy. Recon into the target's patch level and Office version is worth doing before betting on this vector.
+
+For the actual hands-on VBA payload build (AutoOpen/Document_Open wiring, PowerShell download cradle, catching the resulting shell), see [[Leveraging Microsoft Word macros]] — this note covers whether the vector is still viable, that one covers how to build it.
 
 > [!danger] Common pitfalls
 > - Assuming macros still work by default against a modern, patched org — they almost certainly don't.

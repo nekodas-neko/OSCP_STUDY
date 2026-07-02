@@ -7,6 +7,16 @@ tags:
 
 # TCP/UDP Port Scanning Theory
 
+> [!tip] Quick Reference — Manual Port Checks
+> | Goal | Command |
+> |------|---------|
+> | TCP connect/zero-I/O scan | `nc -nvv -w 1 -z <IP> 1-1000` |
+> | UDP zero-I/O scan | `nc -nv -u -z -w 1 <IP> 1-1000` |
+> | Single TCP port check | `nc -nvv -w 2 <IP> 445` |
+> | Nmap SYN scan (compare against nc) | `sudo nmap -sS -p 1-1000 <IP>` |
+> | Nmap UDP scan (compare against nc) | `sudo nmap -sU -p 1-1000 <IP>` |
+> | Capture the exchange for verification | `sudo tcpdump -i <iface> host <IP> and port <port>` |
+
 Port scanning is the process of inspecting TCP or UDP ports on a remote machine with the intention of detecting what services are running on the target and what potential attack vectors may exist.
 
 The simplest TCP port scanning technique, usually called CONNECT scanning, relies on the three-way TCP handshake mechanism. This mechanism is designed so that two hosts attempting to communicate can negotiate the parameters of the network TCP socket connection before transmitting any data.
@@ -61,10 +71,16 @@ flowchart TD
 > - UDP results say "open" everywhere → UDP is stateless; "open|filtered" is normal because silence is ambiguous. Confirm with a real service probe.
 > - `nc` hangs forever → you forgot `-z` (zero-I/O scan mode) or `-w` (timeout); add both.
 > - Everything shows "Connection refused" → the host is reachable but those ports are closed (RST-ACK), which is actually a useful result.
+> - A UDP scan of a whole subnet/port-range takes forever → Linux (and most OSes) rate-limit outgoing ICMP "port unreachable" messages to about 1/sec by default. Nmap/nc can't get a fast "closed" answer any faster than the target's kernel will send it — this is a kernel limit, not a tool bug. Scan fewer ports at once or accept the slowness.
+> - `nc: connect to <IP> port <n> (tcp) failed: Network is unreachable` → wrong interface/route, or you're not on the VPN/lab network; check `ip route` and your VPN connection.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
 > The **TCP three-way handshake** is SYN -> SYN-ACK -> ACK: like saying "hi", "hi back", "great, let's talk". If the port is open the server completes it; if closed it slams the door with an RST. **UDP** has no handshake at all — you fire a packet and infer the state from whether you get an ICMP error back, which is why UDP scans are slower and less certain.
+
+## Resources
+- [Nmap — Port Scanning Basics](https://nmap.org/book/man-port-scanning-basics.html)
+- [HackTricks — Pentesting Methodology](https://book.hacktricks.xyz/generic-methodologies-and-resources/pentesting-methodology)
 
 ---
 %% graph-links %%

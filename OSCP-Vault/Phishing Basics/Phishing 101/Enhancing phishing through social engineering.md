@@ -50,6 +50,13 @@ Trust has two sides:
 - Small details matter: an **HTTP-only** (non-TLS) landing page is an easy tell that breaks the illusion instantly.
 - Carelessness anywhere erodes trust everywhere — one inconsistency and the whole pretext is suspect.
 
+> [!tip] Verify TLS actually works before launch
+> ```bash
+> curl -Iv https://clone-site.example/ 2>&1 | grep -i "SSL certificate"
+> openssl s_client -connect clone-site.example:443 -servername clone-site.example </dev/null
+> ```
+> Catches a missing/expired/self-signed cert before a real target ever sees the browser's own "Not Secure" warning — the single fastest way to blow the trust this section is about building.
+
 **2. Soft skills.** If impersonating a specific person (or using their compromised account), match their **writing tone**. The most sophisticated version of this is building genuine **rapport** with the target over time before ever making the ask.
 
 ## Pressure levers

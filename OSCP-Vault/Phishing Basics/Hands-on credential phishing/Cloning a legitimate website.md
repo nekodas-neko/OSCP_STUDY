@@ -13,6 +13,8 @@ tags:
 > | Tool | Command | Result |
 > |------|---------|--------|
 > | wget | `wget -E -k -K -p -e robots=off -nd "URL"` | Fast, but breaks on live JS that checks its own origin |
+> | wget (full mirror) | `wget --mirror --convert-links --page-requisites --no-parent -e robots=off "URL"` | Preserves real directory structure — fixes broken CSS/JS from flattened `-nd` clones |
+> | HTTrack | `httrack "URL" -O ./clone --robots=0` | Alternative full-site mirror tool, handy for multi-page sites |
 > | SingleFile CLI | `single-file "URL" out.html --browser-executable-path /usr/bin/chromium` | Full-fidelity static render via real Chromium — visuals work, app logic doesn't |
 > | Local preview | `sudo python -m http.server 80` | Serve the clone locally to check how it renders |
 
@@ -53,6 +55,21 @@ Serve it locally to preview: `sudo python -m http.server 80`, then browse to `ht
 > [!danger] It doesn't render cleanly
 > The clone throws an alert: *"OWASP CSRFGuard JavaScript was included from within an unauthorized domain!"* — the original page includes client-side JavaScript that checks its own origin, and a locally-served clone at `127.0.0.1` fails that check instantly. A visible error dialog like this would blow the pretext the moment a real target saw it.
 
+> [!danger] Broken CSS/JS after a `-nd` clone
+> `-nd` saves every file flat with no subdirectories — fine for one self-contained page, but if the real site pulls assets from paths like `/static/css/...` or `/assets/js/...`, the local links `-k` rewrites still point at paths that no longer exist once everything's flattened. Symptom: the page loads with no styling, or interactive elements silently fail. Fix: drop `-nd` and mirror the real structure instead:
+> ```bash
+> wget --mirror --convert-links --page-requisites --no-parent -e robots=off "https://target/signin"
+> ```
+> `--page-requisites` pulls every asset needed to render the page; `--convert-links` rewrites references to their new **relative** paths rather than flattening them. `httrack "URL" -O ./clone --robots=0` is a solid drop-in alternative when wget's output still looks broken.
+
+> [!danger] `OSError: [Errno 98] Address already in use` on port 80
+> Means something — often a preview server from an earlier attempt — already owns the port:
+> ```bash
+> sudo lsof -i :80
+> sudo kill <PID>
+> ```
+> Or just preview on a different port while iterating: `sudo python -m http.server 8000`.
+
 ## Attempt 2: SingleFile CLI
 
 Rather than saving raw page source, [SingleFile CLI](https://github.com/gildas-lormeau/single-file-cli) drives a **real headless Chromium instance** to fully render the page — executing its JavaScript and loading its assets — then serializes the final rendered result into one self-contained HTML file. Because it captures an already-rendered snapshot rather than re-executing the original scripts against a new origin, it sidesteps the CSRFGuard-style origin check entirely.
@@ -66,6 +83,12 @@ single-file "https://zoom.us/signin" signin.html --browser-executable-path /usr/
 ```
 
 Reopening the result now shows a visually faithful clone — right down to the cookie consent modal, a small but important authenticity detail (most real sites show one, so its presence makes the fake feel more legitimate).
+
+> [!danger] SingleFile CLI fails to launch Chromium
+> `Error: Failed to launch the browser process` (or a silent hang) usually means Chromium is missing shared libraries, or the path is wrong. Checklist:
+> - Confirm the binary path: `which chromium` — adjust `--browser-executable-path` to match.
+> - Install missing deps: `sudo apt install -y libnss3 libgbm1 libasound2`.
+> - Running as root in a container/VM: add `--browser-args="--no-sandbox"` to the `single-file` command.
 
 ## What's still broken
 
@@ -88,6 +111,7 @@ This sets up the next step: replacing these broken elements with working, attack
 
 ## Resources
 - [SingleFile CLI (GitHub)](https://github.com/gildas-lormeau/single-file-cli)
+- [HTTrack Website Copier](https://www.httrack.com/)
 - See also: [[🧰 Command Cheat Sheet]] for general `python -m http.server` usage
 
 ---

