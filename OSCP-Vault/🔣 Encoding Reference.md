@@ -42,6 +42,9 @@ Each character becomes `%` + its hex code. Memorise the starred ⭐ ones.
 > ```
 > See [[Encoding special characters]] for the full worked example.
 
+> [!warning] Overlong UTF-8 as a second-layer traversal bypass
+> `%c0%ae` is an **overlong UTF-8** encoding of `.` — technically invalid UTF-8 (a multi-byte sequence for a character that fits in one byte), but some older/lenient parsers decode it anyway. Worth trying when plain `%2e%2e` and double-encoding both get stripped: `%c0%ae%c0%ae/` in place of `../`. A Windows-specific variant: the backslash (`%5c`) sometimes survives a filter that only blocks forward slashes, since IIS/Windows treats both as path separators.
+
 ---
 
 ## 🔁 Double Encoding
@@ -77,6 +80,20 @@ When the server decodes **once**, encode **twice**. The `%` itself becomes `%25`
 
 ---
 
+## 🌍 Punycode / IDN homograph (lookalike domains)
+
+Internationalized domains encode non-ASCII characters as `xn--...` ASCII strings — e.g. a Cyrillic "а" swapped into "аpple.com" renders visually identical to the real domain but resolves to `xn--pple-43d.com`. Core technique behind phishing lookalike domains (see [[Recognize malicious links]]).
+
+```bash
+idn2 xn--pple-43d.com          # decode punycode -> reveals the real (spoofed) chars
+python3 -c "print('аpple.com'.encode('idna'))"   # encode a unicode domain to punycode
+dnstwist apple.com              # generate + check plausible lookalike registrations
+```
+
+> [!tip] Hover, don't trust — the address bar renders punycode back to Unicode by default in most browsers, which is exactly what makes the homograph swap invisible without decoding it explicitly.
+
+---
+
 ## 🅷 HTML Entities (for XSS / output that gets escaped)
 
 | Char | Entity | Numeric |
@@ -88,6 +105,19 @@ When the server decodes **once**, encode **twice**. The `%` itself becomes `%25`
 | `&` | `&amp;` | `&#38;` |
 
 > [!tip] If your `<script>` shows up as text on the page, the app is HTML-encoding it. Try breaking out of an attribute, or use event handlers like `onerror`. See [[Basic XSS]].
+
+> [!example] XSS-specific bypass encodings
+> ```html
+> <!-- Double URL-encoding, when a WAF decodes once before the app decodes again -->
+> %253Cscript%253Ealert(1)%253C/script%253E
+> <!-- JS obfuscation to dodge a keyword/string-match filter on "alert" -->
+> <script>eval(String.fromCharCode(97,108,101,114,116,40,49,41))</script>
+> <!-- HTML entity encoding inside an event handler, when raw < > get stripped but entities don't -->
+> <img src=x onerror="&#97;lert(1)">
+> ```
+
+> [!warning] PHP `zip://` wrapper needs `#` URL-encoded as `%23`
+> `zip://path/to/file.zip#internal_file.php` — the `#` normally starts a URL fragment and gets truncated by the browser/client before the request is even sent, so the request never reaches the server with the internal filename intact. Encode it as `%23` to keep it in the query string. See [[PHP wrappers]].
 
 ---
 

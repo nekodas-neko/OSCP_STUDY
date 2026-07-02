@@ -41,6 +41,12 @@ The technique: inspect the **metadata** of publicly available documents tied to 
 > [!warning] Don't over-trust a single document
 > Metadata from an **old** document may be stale — software changes over time. Different **branches or departments** may also run different software entirely. Treat one document as a data point, not the whole picture; pull several if you can.
 
+> [!tip] Pulling several documents at once
+> Point `exiftool` at a whole directory instead of one file at a time: `exiftool -a -u -r ./downloads/` (recursive) scans every file, and `exiftool -csv -a -u ./downloads/*.pdf > metadata.csv` dumps it all to one CSV for a quick eyeball across many Author/Producer/date fields side by side.
+
+> [!tip] `exiftool` missing
+> Not installed by default on every Kali image — `sudo apt install libimage-exiftool-perl` if `exiftool: command not found`.
+
 ## Finding documents to inspect
 
 - **Passive (preferred):** reuse [[Google Hacking]] dorks — `site:example.com filetype:pdf`, optionally narrowed with branch/location keywords.

@@ -18,6 +18,8 @@ tags:
 > | DNS subdomains | `gobuster dns -d <domain> -w subdomains.txt` |
 > | With auth | `gobuster dir -u http://<IP>/ -w common.txt -U admin -P password` |
 > | Quiet + output | `gobuster dir -u http://<IP>/ -w common.txt -q -o gobuster.txt` |
+> | Tune threads (speed vs. stability) | `gobuster dir -u http://<IP>/ -w common.txt -t 50` |
+> | ffuf equivalent (faster) | `ffuf -u http://<IP>/FUZZ -w common.txt -e .php,.txt,.bak` |
 
 ## Decision Tree
 
@@ -41,6 +43,14 @@ Web server found?
 - `Discovery/Web-Content/raft-large-files.txt` — file-focused
 - `Discovery/DNS/subdomains-top1million-5000.txt` — vhost/dns
 
+> [!tip] ffuf — faster alternative
+> `ffuf` is Go-based like gobuster but generally faster and more flexible with filtering. Same job, different flags:
+> ```bash
+> ffuf -u http://<IP>/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -e .php,.txt,.bak
+> ffuf -u http://<IP>/FUZZ -w common.txt -fc 404          # filter out 404s
+> ffuf -u http://<IP>/FUZZ -w common.txt -fs 1234         # filter by response size (false positives)
+> ```
+
 ## Visual Flow
 
 ```mermaid
@@ -63,6 +73,9 @@ flowchart TD
 > - HTTPS target: `unknown certificate` / TLS error → add `-k` to skip cert checks.
 > - Every path returns the same status (false positives) → blacklist it, e.g. `-b 301,404`, or filter by size with `--exclude-length`.
 > - Missing scheme error → include `http://` (or `https://`) in the `-u` URL on newer Gobuster versions.
+> - `the server returns a wildcard response` (vhost/dns mode) → the target resolves *any* subdomain to the same page, so every guess looks like a hit. Gobuster asks you to confirm — add `--wildcard` to force it to continue anyway and then filter by response size instead.
+> - Scan grinds to a halt / target starts dropping connections (rate limiting or a WAF) → lower concurrency with `-t 5` (or less) and add `--delay 500ms`; a burst of 10 threads is often enough to trip a lab WAF.
+> - Gobuster hangs on a slow target → add `--timeout 10s` so a single dead request doesn't stall the whole run.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note

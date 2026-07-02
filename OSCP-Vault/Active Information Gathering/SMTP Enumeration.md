@@ -15,6 +15,10 @@ tags:
 > | Expand mailing list | `EXPN <list>` (in nc session) |
 > | Nmap scripts | `nmap -p 25 --script smtp-enum-users,smtp-commands <IP>` |
 > | smtp-user-enum tool | `smtp-user-enum -M VRFY -U /usr/share/wordlists/users.txt -t <IP>` |
+> | RCPT TO enum method | `smtp-user-enum -M RCPT -U /usr/share/wordlists/users.txt -t <IP>` |
+> | Check open relay | `nmap -p 25 --script smtp-open-relay <IP>` |
+> | Grab version (Metasploit) | `msfconsole -q -x "use auxiliary/scanner/smtp/smtp_version; set RHOSTS <IP>; run"` |
+> | Test on alt port | `nc -nv <IP> 587` |
 
 ## Decision Tree
 
@@ -49,6 +53,9 @@ flowchart TD
 > - Every name returns `252` → the server accepts all addresses (VRFY not really validating); switch to `-M RCPT` which is more reliable.
 > - `503 5.5.1 Error: send HELO/EHLO first` → say `HELO test` (or `EHLO`) before issuing VRFY/RCPT.
 > - Connection just hangs → the server may be greylisting/tarpitting; add a timeout or try ports 465/587.
+> - `421 4.7.0 Please use STARTTLS` or connection drops right after the banner → the server requires TLS before any commands; use `swaks --to test@target -s <IP> -p 25 -tls` or connect with `openssl s_client -starttls smtp -connect <IP>:25` instead of raw `nc`.
+> - `smtp-user-enum` returns nothing / all "not found" after a burst of requests → the server may be rate-limiting or tempfailing after N attempts; slow down with a lower thread count or space out requests.
+> - `nc: connect to <IP> port 25 (tcp) failed: Connection refused` → nothing is listening on 25; check `nmap -p 25,465,587 <IP>` for the actual mail submission port in use.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note

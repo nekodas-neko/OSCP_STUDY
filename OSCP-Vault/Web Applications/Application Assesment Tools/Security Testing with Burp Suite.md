@@ -16,6 +16,9 @@ tags:
 > | Toggle intercept | Ctrl+T |
 > | Search in response | Ctrl+F (in Repeater) |
 > | Decode selection | Right-click → Send to Decoder |
+> | Restrict proxy scope | Target tab → Scope → Add → then check "Show only in-scope items" in HTTP History |
+> | Add Match/Replace rule | Proxy → Options → Match and Replace → Add |
+> | Diff two responses | Right-click → Send to Comparer |
 
 ## Workflow
 
@@ -57,13 +60,21 @@ flowchart TD
 
 > [!danger] Common errors
 > - Browser hangs / pages never load → Intercept is ON; click Forward repeatedly or toggle Intercept OFF (Ctrl+T).
-> - HTTPS shows certificate warnings → install Burp's CA cert from `http://burpsuite` (Proxy running) into Firefox.
+> - HTTPS shows certificate warnings and won't go away after visiting `http://burpsuite` → the cert must be **imported and trusted**, not just downloaded: in Firefox go to `about:preferences#privacy` → Certificates → **View Certificates** → Authorities tab → **Import**, select the downloaded `cacert.der`, and tick "Trust this CA to identify websites".
 > - No traffic in HTTP History → Firefox proxy not set to `127.0.0.1:8080`, or "Use system proxy" still selected.
 > - Closed Burp and Firefox stopped working → the proxy is gone; switch Firefox back to No proxy.
+> - Intruder attack looks blocked/throttled (lots of `503`/timeouts partway through) → target or a WAF is rate-limiting; open the Resource Pool (Intruder → Resource pool) and lower the max concurrent requests, or add a request delay.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
 > Burp sits **between your browser and the server** as a proxy, so you can pause, read, and change every request. **Repeater** is for hand-editing one request over and over; **Intruder** automates the same edit across a wordlist (e.g. password guessing).
+
+## Reducing noise: Scope & Match/Replace
+
+By default Burp captures *everything*, including CDN/analytics junk. Two features cut that down:
+
+- **Target scope** — Target tab → Scope → Add the target URL/IP. Then tick "Show only in-scope items" at the bottom of Proxy > HTTP History (and Target > Site map) so only traffic to the box you're testing shows up.
+- **Match and Replace** — Proxy → Options → Match and Replace lets you auto-rewrite every request/response matching a rule, e.g. always inject a session cookie or `Authorization` header so you don't have to add it by hand in every Repeater tab, or swap `User-Agent` to look like a real browser.
 
 ## Resources
 - [PortSwigger Web Academy](https://portswigger.net/web-security) — free labs

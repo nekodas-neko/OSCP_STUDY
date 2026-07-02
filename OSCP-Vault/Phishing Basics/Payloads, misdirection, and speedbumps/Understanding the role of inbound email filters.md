@@ -38,6 +38,15 @@ Before payload choices even come into play, every phishing email has to survive 
 
 **1. Domain reputation.** Filters score the sending domain using reputation blocklists plus signals like **domain age**. A domain registered yesterday is inherently more suspicious than one that's been active for years — this is exactly why skilled phishers register and "age" look-alike domains well ahead of a campaign (see [[Email phishing]]).
 
+> [!tip] Checking a domain before you commit to it
+> ```bash
+> whois corp-vendor.com | grep -i "creation date"     # domain age
+> dig txt corp-vendor.com +short                       # SPF record, if any
+> dig txt _dmarc.corp-vendor.com +short                 # DMARC policy — p=reject/quarantine hurts spoofing attempts
+> dig txt selector._domainkey.corp-vendor.com +short    # DKIM (selector varies — check a real header sample, or try common defaults like google/selector1/selector2)
+> ```
+> A young domain with no SPF/DMARC at all is easy to spoof but also easy to flag; a well-aged domain (or a genuinely compromised mailbox, as in [[Creating a Zoom credential phishing pretext]]) with SPF/DKIM already configured correctly is what actually clears modern filters.
+
 **2. Attachment scrutiny.** Filters inspect attachments and flag risky types:
 - **EXE and SCR** — treated as maximally suspicious by nearly every product.
 - **Office documents, PDFs, ZIP archives, and script files** — scrutinized to varying degrees depending on the product.

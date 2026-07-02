@@ -22,6 +22,9 @@ flowchart TD
     B -->|Shell issues| G["Shells<br/>listener / LHOST / TTY"]
     B -->|Cannot download| H["File transfer<br/>curl / chmod / writable dir"]
     B -->|Address already in use| I["Ports / processes<br/>lsof / kill / fuser"]
+    B -->|RDP won't connect/paste| J["RDP<br/>xfreerdp flags"]
+    B -->|Payload fires, no exfil| K["XSS<br/>HttpOnly / CSP"]
+    B -->|Rate-limited / blocked| L["OSINT<br/>GitHub / Google cache"]
 ```
 
 ---
@@ -85,6 +88,23 @@ flowchart TD
 > [!danger] `NT_STATUS_LOGON_FAILURE`
 > Wrong username/password. Re-check creds; try `''` empty, or `guest` with no password.
 
+> [!warning] `smbclient` silently uses your local Kali username
+> Running `smbclient //$IP/share -c 'put file'` with no `-N`/`-U` prompts for a password but authenticates as **your local Kali account name** — if that account doesn't exist on the target, you get `NT_STATUS_ACCESS_DENIED` even though the target *does* accept anonymous access. Always be explicit: `-N` for a null/anonymous session, or `-U user%pass` for known creds.
+
+---
+
+## 🖥️ RDP (xfreerdp)
+
+> [!danger] `rdesktop` fails to connect at all
+> Windows 11 (and any non-domain-joined target with NLA enabled, the default) rejects `rdesktop`'s auth handshake. Use `xfreerdp` instead — see [[🧰 Command Cheat Sheet]] for the full flag reference.
+
+> [!warning] Common xfreerdp gotchas beyond the rdesktop swap
+> - **Cert warning blocks connection** → add `/cert:ignore`.
+> - **Can't paste text/commands into the session** → reconnect with `/clipboard`, or serve a `.txt` from Kali and open/copy it from a browser inside the VM instead.
+> - **Need to move files in/out** → `/drive:kali,/home/user` maps a local folder to `\\tsclient\kali` inside the session.
+> - **Laggy/choppy session** → `/dynamic-resolution /gfx:AVC420` (or drop `/bpp:16` for lower color depth on a slow link).
+> - **Session drops immediately after connecting** → double-check the username/password; a typo often disconnects instead of prompting to retry.
+
 ---
 
 ## 🌐 Web / gobuster
@@ -106,12 +126,38 @@ flowchart TD
 > [!warning] HTTPS site: `tls: failed to verify certificate`
 > Add `-k` (gobuster/curl) to ignore the self-signed cert.
 
+> [!danger] Burp's CA cert not trusted in Firefox — HTTPS sites won't load through the proxy
+> Import it once per Kali install: Firefox → Settings → **Privacy & Security** → **Certificates** → **View Certificates** → **Authorities** tab → **Import** → select `burp-cert.der` (export it first from Burp: **Proxy → Options → Import/Export CA Certificate**, or visit `http://burp` while the proxy is active and download it from there). Check "Trust this CA to identify websites" on import.
+
+> [!warning] Third-party web scanners can't reach lab/internal IPs
+> SSL Labs, securityheaders.com, Netcraft, and similar hosted scanners can only reach **public** internet targets — they will never successfully scan an OSCP lab/internal IP. Replicate the same checks locally: `curl -I`/`curl -IL` for headers, `testssl.sh`/`sslscan`/`openssl s_client -connect` for TLS. See [[🧰 Command Cheat Sheet]].
+
+---
+
+## 🅰️ XSS
+
+> [!warning] Payload fires but exfil doesn't land / cookie theft fails
+> - **`HttpOnly` cookie** → `document.cookie` returns nothing for that cookie; JS literally cannot read it. Look for another way to leverage the XSS (CSRF-style actions, session riding) instead of cookie theft.
+> - **CSP blocks inline `<script>` or the exfil request** → check the `Content-Security-Policy` response header; a strict `script-src` blocks inline payloads, and `connect-src`/`default-src` can block your `fetch()`/`XMLHttpRequest` beacon even if the script itself executed.
+> - **Cross-origin `fetch()` throws in the console but still lands** → a same-origin/CORS error in devtools doesn't always mean the request never reached your listener — check the listener/access log before assuming total failure.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+---
+
+## 🕵️ OSINT / Passive recon
+
+> [!warning] GitHub code search returns `403` / secondary rate limit
+> Unauthenticated GitHub search is aggressively rate-limited. Space out queries, or authenticate (`gh auth login` / a personal access token) for a much higher limit.
+
+> [!warning] Google's `cache:` operator no longer works (deprecated 2024)
+> Use the [Wayback Machine](https://web.archive.org) instead for a historical/cached view of a page Google indexed but the live site has since changed.
+
 ---
 
 ## 🔌 Ports / processes on Kali
 
-> [!danger] `OSError: [Errno 98] Address already in use`
-> **Cause:** Something is already bound to that port — usually a server you started earlier and forgot to close (or a second tool trying to use the same port).
+> [!danger] `OSError: [Errno 98] Address already in use` / service won't bind
+> **Cause:** Something is already bound to that port — usually a server you started earlier and forgot to close (or two tools defaulting to the same port).
 > **Fix — find and kill it:**
 > ```bash
 > sudo lsof -i :80                # shows PID + process name on port 80
@@ -119,7 +165,11 @@ flowchart TD
 > sudo kill <PID>                 # kill by PID once found
 > sudo fuser -k 80/tcp            # or kill whatever's on the port in one shot
 > ```
-> **Common trigger:** running WsgiDAV (`--port=80`) *and* a Python web server (`python3 -m http.server 80`) at the same time for a Windows library-files attack (see [[Obtaining code execution via Windows library files]]) — both default to port 80. Keep them on separate ports, e.g. WsgiDAV on `80`, the payload server on `8000`, and point the `.lnk`'s download cradle at `:8000` to match.
+> This is a **generic pattern** that recurs constantly — the specific port/services just change:
+> - WsgiDAV (`--port=80`) *and* `python3 -m http.server 80` running at once for a Windows library-files attack (see [[Obtaining code execution via Windows library files]]) — both default to port 80. Fix: keep WsgiDAV on `80`, the payload server on `8000`, and point the `.lnk`'s download cradle at `:8000` to match.
+> - `impacket-smbserver` failing to start because Kali's **own** `smbd` service already owns port 445 — check with `sudo ss -tlnp | grep :445`, stop it with `sudo systemctl stop smbd`, or just use a Python `http.server` instead if SMB isn't required.
+> - Nessus's web UI unreachable on `:8834` despite `nessusd` supposedly running — confirm with `sudo systemctl status nessusd` and `sudo ss -tlnp | grep 8834` before assuming it's a firewall issue.
+> - Any custom listener (`nc -nvlp <port>`, a phishing credential-capture server, a second `http.server`) silently failing the same way — same fix every time.
 
 ---
 
@@ -167,6 +217,7 @@ flowchart TD
 > - Add `--level=5 --risk=3` (more aggressive)
 > - Provide the full request: save it from Burp and use `-r request.txt`
 > - Specify the DB: `--dbms=mysql`
+> - A WAF/filter stripping SQL keywords is a **different** failure mode than "not trying hard enough" — reach for `--tamper=space2comment` (or another matching tamper script) instead of just cranking `--level`/`--risk` higher.
 
 ---
 

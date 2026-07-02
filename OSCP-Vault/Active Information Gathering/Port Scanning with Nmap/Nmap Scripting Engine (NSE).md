@@ -17,6 +17,11 @@ tags:
 > | OS detection | `sudo nmap -O --osscan-guess <IP>` |
 > | Output all formats | `sudo nmap -sC -sV -oA scan <IP>` |
 > | Sweep live hosts | `nmap -sn 10.10.10.0/24` |
+> | Run a vuln-scan category | `sudo nmap --script vuln -p <ports> <IP>` |
+> | Pass script arguments | `nmap --script smb-enum-shares --script-args smbuser=admin,smbpass=Passw0rd -p 445 <IP>` |
+> | Run every script in a category | `nmap --script "http-*" -p 80 <IP>` |
+> | Update the script database | `sudo nmap --script-updatedb` |
+> | Raise per-script timeout | `nmap --script <name> --script-timeout 30s <IP>` |
 
 ## Decision Tree
 
@@ -57,6 +62,9 @@ flowchart TD
 > - `'http-headers' did not match a category, filename, or directory` → typo in the script name; list options with `ls /usr/share/nmap/scripts/`.
 > - Scripts run but return nothing → the service was not actually that protocol; confirm with `-sV` first.
 > - `-sC` feels slow / noisy → it runs the whole `default` category; narrow to one script with `--script <name>` on real exams.
+> - A single script stalls the whole scan for minutes → some scripts (e.g. `smb-vuln-*`, `vuln` category) have long internal retries; cap it with `--script-timeout 30s` or drop that one script.
+> - `--script-args` values with special characters get mangled → wrap the whole argument list in quotes: `--script-args 'smbuser=admin,smbpass=P@ss!'`.
+> - `NSOCK ERROR` / script errors about sockets → usually a firewall or IPS resetting connections mid-script; re-run with `-Pn` and/or a lower `--script-timeout`, or accept the port is filtered.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -75,6 +83,26 @@ We can use the NSE to launch user-created scripts to automate various scanning t
 > ```sh
 > nmap --script-help http-headers
 > ```
+
+> [!example] Scripts often take extra options via `--script-args` — a `key=value,key2=value2` list. Here `smb-enum-shares` is given credentials so it can enumerate shares that reject anonymous/null sessions:
+> ```sh
+> nmap --script smb-enum-shares --script-args smbuser=admin,smbpass=Passw0rd -p 445 192.168.50.152
+> ```
+
+> [!info] Handy scripts by service
+> | Service | Script(s) |
+> |---------|-----------|
+> | FTP (21) | `ftp-anon`, `ftp-syst` |
+> | SSH (22) | `ssh2-enum-algos`, `ssh-auth-methods` |
+> | HTTP(S) (80/443) | `http-enum`, `http-title`, `http-methods`, `http-headers` |
+> | SMB (139/445) | `smb-enum-shares`, `smb-enum-users`, `smb-os-discovery`, `smb-vuln-ms17-010` |
+> | SMTP (25) | `smtp-commands`, `smtp-enum-users`, `smtp-open-relay` |
+> | SNMP (161) | `snmp-sysdescr`, `snmp-processes`, `snmp-netstat` |
+> | MySQL (3306) | `mysql-info`, `mysql-empty-password` |
+> | Generic | `vuln` category (`--script vuln`), `vulners` (needs internet + CPE match) |
+
+> [!tip] Nmap's scripts are just categorized Lua files
+> Categories like `vuln`, `default`, `discovery`, `auth`, and `brute` group related scripts — run `--script <category>` to fire a whole group at once. `-sC` is shorthand for `--script default`.
 
 ---
 %% graph-links %%

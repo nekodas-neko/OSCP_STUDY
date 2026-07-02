@@ -5,6 +5,15 @@ tags:
 
 # Absolute vs relative paths
 
+> [!tip] Quick Reference — Absolute vs Relative Paths
+> | Task | Command |
+> |------|---------|
+> | Show current directory | `pwd` |
+> | List root filesystem | `ls /` |
+> | Absolute path read | `cat /etc/passwd` |
+> | Relative path climb (2 levels) | `cat ../../etc/passwd` |
+> | Resolve what a relative path really points to | `readlink -f ../../etc/passwd` |
+> | Over-climbing is harmless | `cat ../../../../../../../../etc/passwd` |
 
 > [!example] Absolute path
 > Starting in `/home/kali`, the leading `/` in `/etc/passwd` makes it an absolute path — resolved from the root of the filesystem, so it works from any directory. Without the leading slash, the shell would look for `etc` inside the current directory instead.
@@ -61,6 +70,9 @@ flowchart TD
 
 > [!tip] Beginner note
 > An **absolute path** starts at the root `/` and is the same no matter where you are. A **relative path** is directions from your current folder, where each `../` means "go up one level." Directory traversal exploits relative paths to climb out of the web root.
+
+> [!tip] Not sure how many ../ you need?
+> Don't just guess-and-check blindly against the target. Test the same relative path locally first with `readlink -f ../../etc/passwd` (or `realpath ../../etc/passwd`) to see exactly which absolute path it resolves to — then adjust the `../` count before firing it at the web app.
 
 ---
 %% graph-links %%

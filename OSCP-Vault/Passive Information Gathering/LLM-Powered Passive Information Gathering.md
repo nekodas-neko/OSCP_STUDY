@@ -7,6 +7,16 @@ tags:
 
 # LLM-Powered Passive Information Gathering
 
+> [!tip] Quick Reference — Prompts
+> | Goal | Prompt |
+> |------|--------|
+> | WHOIS summary | `whois megacorpone.com` |
+> | Org/people OSINT | `Can you print out all the public information about company structure and employees of megacorpone?` |
+> | Tailored dorks | `Can you provide the best 20 Google dorks for megacorpone.com tailored for a penetration test?` |
+> | Tech stack guess | `Retrieve the technology stack of the megacorpone.com website` |
+> | Force a live lookup | Use a model/tool with browsing enabled (e.g. web-search-enabled Claude/ChatGPT, Perplexity) and ask it to cite sources |
+> | Verify a claim | `What is your source for that, and how current is it?` |
+
 As we know, passive information gathering involves exploring open-source data for insights into a target's infrastructure, personnel, policies, and technology stack - all without direct contact with the target's systems. LLMs can bring significant advantages to this stage. By using natural language processing to analyze vast amounts of unstructured data from various sources, these tools help us uncover patterns and connections that might otherwise go unnoticed.
 
 > [!example] WHOIS prompt
@@ -76,10 +86,16 @@ flowchart TD
 > - Assuming the LLM did a live lookup → tools like ChatGPT often do NOT query the internet by default; they may simulate results from training data, which can be outdated or wrong.
 > - Acting on hallucinated data → always confirm names, emails, and tech with real tools (whois, Netcraft/Wappalyzer, actual Google dorks) before using them.
 > - Stale dates/contacts → WHOIS and personnel info change; treat LLM output as leads, not facts.
+> - Prompt refused or answered vaguely → phrasing a request with words like "attack", "hack", or "exploit" can trigger safety filters on some hosted chat tools; rephrase around the *public information* angle (e.g. "summarize public OSINT about X") to get a useful answer.
+> - Hitting a usage cap mid-session → free tiers of hosted LLMs rate-limit messages per hour; space out prompts or switch to an API key with its own quota.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
 > The LLM is just an **accelerator** for passive recon — it summarizes open-source data and suggests queries without you contacting the target. It is not a source of truth: use it to draft dorks and connect dots, then verify everything with the real tools.
+
+## Resources
+- [Google Hacking Database (GHDB)](https://www.exploit-db.com/google-hacking-database) — verify LLM-suggested dorks here
+- [[Google Hacking]] — run the dorks the LLM suggests for real
 
 ---
 %% graph-links %%

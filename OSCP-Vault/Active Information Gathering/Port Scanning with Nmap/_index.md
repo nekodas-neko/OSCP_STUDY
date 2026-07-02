@@ -31,6 +31,9 @@ tags:
 > | OS detection | `sudo nmap -O --osscan-guess <IP>` |
 > | Output all formats | `sudo nmap -sC -sV -oA scan <IP>` |
 > | Sweep live hosts | `nmap -sn 10.10.10.0/24` |
+> | Aggressive timing (labs/exam) | `sudo nmap -T4 -p- <IP>` |
+> | Skip DNS resolution (faster) | `nmap -n -p- <IP>` |
+> | Scan from a specific interface | `nmap -e tun0 -p- <IP>` |
 
 ## Decision Tree
 
@@ -178,3 +181,25 @@ Use `-A` to grab service banners and run enumeration scripts. Here it identifies
 ```sh
 nmap -sT -A 192.168.50.14
 ```
+
+## Timing Templates
+
+> [!info] `-T0` (paranoid) through `-T5` (insane) trade speed for stealth/accuracy. Default is `-T3`. `-T4` is the common choice in labs/exam environments where IDS evasion doesn't matter and you want results fast; drop to `-T2`/`-T1` only if a target is dropping packets under load or you need to stay quiet.
+> ```sh
+> sudo nmap -T4 -p- --min-rate 5000 192.168.50.149
+> ```
+
+> [!success] What success looks like
+> The scan reports a clean list of `PORT / STATE / SERVICE` lines (`open`, `closed`, or `filtered`), and with `-sV`/`-A` each open port also gets a plausible version string (e.g. `445/tcp open microsoft-ds Windows Server 2019`). `-oA` writes matching `.nmap`/`.gnmap`/`.xml` files you can grep or import later.
+
+> [!danger] Common errors
+> - `You requested a scan type which requires root privileges` → add `sudo`, or Nmap silently downgrades `-sS`/`-O` to a plain `-sT` connect scan without raw-socket access.
+> - `Failed to resolve "<host>"` → DNS can't resolve the target name; use the raw IP instead, or fix `/etc/resolv.conf`.
+> - Scan reports a host as down (`Note: Host seems down`) even though it's alive → the host blocks ICMP; add `-Pn` to skip host discovery and scan anyway.
+> - Results look incomplete/inconsistent between runs, or a flood of `filtered` ports → an IDS/firewall is rate-limiting or actively dropping probes at high `--min-rate`; retry slower with `-T2` and/or `--scan-delay 1s`.
+> - `nmap: command not found` → not installed; `sudo apt install nmap`.
+> - Re-running a scan silently overwrites a previous `-oA` output with the same basename → use a unique filename per scan (e.g. include the IP/date) if you want to keep old results.
+> Full list: [[⚠️ Common Errors & Troubleshooting]]
+
+> [!tip] Beginner note
+> Start broad and cheap (`-sn` sweep or a default 1000-port scan), then narrow: full-port SYN scan on live hosts, then `-sC -sV` only on the ports that came back open. Scanning `-p- -A` against a whole /24 up front just wastes time.

@@ -52,7 +52,10 @@ A live phone call. Unlike email/smishing, vishing is driven almost entirely by *
 
 ## Caller ID spoofing
 
-VoIP makes it cheap to alter the number a call or text appears to come from. Used in both smishing and vishing to make the sender look trusted or familiar.
+VoIP makes it cheap to alter the number a call or text appears to come from. Used in both smishing and vishing to make the sender look trusted or familiar. For authorized engagements, a legitimate programmable-communications provider (e.g. **Twilio**) with a client-approved caller ID is the standard way to do this without touching anything of dubious legality.
+
+> [!danger] Spoofed/VoIP numbers get auto-flagged
+> Many carriers now label calls/texts from unfamiliar VoIP numbers as **"Scam Likely"** (or similar) before the target even answers — killing the pretext instantly, no social engineering skill can recover from that. Mitigations: use a number with a local area code matching the target's region, avoid dialing the same number across many targets in a short window (a major spam-flag trigger), and where the engagement timeline allows it, "warm" the number with a handful of ordinary-looking calls beforehand.
 
 ## SIM swapping
 

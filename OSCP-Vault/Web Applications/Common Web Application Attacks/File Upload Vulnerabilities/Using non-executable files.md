@@ -69,6 +69,7 @@ flowchart TD
 > - SSH host key error on a new box → `rm ~/.ssh/known_hosts` before connecting (the saved key is from a different machine).
 > - `../` sequences stripped from the filename → try encoding them or backslashes. See [[🔣 Encoding Reference]].
 > - Root has no SSH access → this only works if root login via key is allowed; if not, you have no other listed vector here.
+> - SSH refuses your key: "UNPROTECTED PRIVATE KEY FILE" → run `chmod 400 fileup` (or `600`) before connecting; permissions can end up too open if the key was copied or generated with a non-default umask.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note

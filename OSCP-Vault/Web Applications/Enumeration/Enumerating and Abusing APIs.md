@@ -7,6 +7,17 @@ tags:
 
 # Enumerating and Abusing APIs
 
+> [!tip] Quick Reference — API Enumeration
+> | Goal | Command |
+> |------|---------|
+> | Brute force versioned endpoints | `gobuster dir -u http://<IP>:<port> -w big.txt -p pattern` |
+> | Check for Swagger/OpenAPI docs | `curl -s http://<IP>:<port>/swagger.json` |
+> | Probe allowed methods (no side effects) | `curl -X OPTIONS -i http://<IP>:<port>/<path>` |
+> | Inspect an endpoint | `curl -i http://<IP>:<port>/<path>` |
+> | Send JSON POST | `curl -d '{"key":"val"}' -H 'Content-Type: application/json' <url>` |
+> | Force a different method | `curl -X PUT -d '{}' -H 'Content-Type: application/json' <url>` |
+> | Route requests through Burp | `curl --proxy 127.0.0.1:8080 <url>` |
+
 In many cases, our penetration test target is an internally built, closed-source web application that is shipped with a number of Application Programming Interfaces (API). These APIs are responsible for interacting with the back-end logic and providing a solid backbone of functions to the web application.
 
 A specific type of API named Representational State Transfer (REST) is used for a variety of purposes, including authentication.
@@ -133,6 +144,23 @@ Interesting hits from the output:
 
 > [!info] Tip
 > Browsing to the `/ui` path often exposes the full API documentation (e.g. a Swagger UI). This is common in white-box testing but rarely available in a black-box test.
+
+> [!tip] Check for Swagger/OpenAPI docs before brute forcing
+> Many frameworks expose a machine-readable spec at a predictable path — if one of these responds, it hands you a complete map of every endpoint, parameter, and expected schema, no wordlist needed:
+> ```sh
+> curl -s http://<IP>:<port>/swagger.json
+> curl -s http://<IP>:<port>/swagger-ui.html
+> curl -s http://<IP>:<port>/openapi.json
+> curl -s http://<IP>:<port>/api-docs
+> curl -s http://<IP>:<port>/v2/api-docs
+> ```
+
+> [!tip] Probing methods without triggering side effects
+> Before guessing methods one by one with real payloads, send an `OPTIONS` request — the `Allow:` response header lists every method the endpoint supports, with no risk of actually changing data:
+> ```sh
+> curl -X OPTIONS -i http://192.168.50.16:5002/users/v1/admin/password
+> ```
+> Look for `Allow: GET, POST, PUT, OPTIONS` (or similar) in the response headers.
 
 
 Inspect the `/users/v1` endpoint:
@@ -288,6 +316,8 @@ flowchart TD
 > - POST data ignored / 400 errors → you forgot the JSON header; add `-H 'Content-Type: application/json'` and pass valid JSON via `-d`.
 > - 405 on GET → do not give up; the endpoint is real, retry with `-X POST` or `-X PUT`.
 > - HTTPS API cert error → add `-k` to curl.
+> - `401 Unauthorized` / `token expired` after using a saved JWT → tokens carry an `exp` claim; re-run the login request to mint a fresh `auth_token` rather than reusing an old one from notes.
+> - Generic gobuster wordlist finds nothing under `/api/` → switch to an API-specific list, e.g. `/usr/share/seclists/Discovery/Web-Content/api/api-endpoints.txt` or `objects.txt`.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note

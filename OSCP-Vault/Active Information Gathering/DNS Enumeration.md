@@ -18,6 +18,11 @@ tags:
 > | Zone transfer (dnsrecon) | `dnsrecon -d <domain> -t axfr` |
 > | Brute force subdomains | `dnsrecon -d <domain> -D /usr/share/wordlists/dnsmap.txt -t brt` |
 > | dnsenum full | `dnsenum <domain>` |
+> | dig any record | `dig any <domain>` |
+> | dig zone transfer | `dig axfr <domain> @<nameserver>` |
+> | dig against a specific resolver | `dig @8.8.8.8 <domain>` |
+> | dig short answer only | `dig +short <domain>` |
+> | dig reverse (PTR) lookup | `dig -x <IP> @<nameserver>` |
 
 ## Decision Tree
 
@@ -54,6 +59,8 @@ flowchart TD
 > - `Host X not found: 3(NXDOMAIN)` → the name simply does not resolve; that hostname does not exist (this is normal during brute forcing).
 > - Zone transfer `Transfer failed` / `connection timed out; no servers could be reached` → the nameserver refuses AXFR (the secure default). Move on to `-t std` and brute forcing.
 > - `Unable to validate base domain ... no such host` → your DNS resolver cannot reach the domain; specify a nameserver with `-n <ns IP>` or fix `/etc/resolv.conf`.
+> - `dig` hangs then `;; communications error to <IP>#53: timed out` → nameserver is unreachable or UDP/53 (or TCP/53 for AXFR) is firewalled; confirm with `nc -nv -u <IP> 53` or try a different resolver.
+> - `dig axfr` returns instantly with `; Transfer failed.` and no `communications error` → the server actively refused AXFR (correct, secure behavior), as opposed to a timeout (network problem) — don't keep retrying, just move to brute forcing.
 > Full list: [[⚠️ Common Errors & Troubleshooting]]
 
 > [!tip] Beginner note
@@ -107,6 +114,19 @@ In this case, we first ran the host command to fetch only megacorpone.com MX rec
 > megacorpone.com descriptive text "google-site-verification=..."
 > ```
 
+
+> [!example] `dig` is the more flexible/scriptable alternative to `host`. `any` requests every record type in one query, `+short` trims the output to just the answer, and `@<resolver>` targets a specific DNS server instead of the system default:
+> ```bash
+> dig any megacorpone.com
+> dig +short megacorpone.com
+> dig @8.8.8.8 megacorpone.com
+> ```
+
+> [!example] Attempt a zone transfer with `dig axfr` — the more common tool-of-choice over `host -l` for this. Pass the domain, then `@<nameserver>`:
+> ```bash
+> dig axfr megacorpone.com @ns1.megacorpone.com
+> ```
+> Success dumps every record in the zone in one response. A refused/secured server returns `; Transfer failed.` — move on to brute forcing.
 
 > [!example] A **valid** hostname resolves to an address:
 > ```bash

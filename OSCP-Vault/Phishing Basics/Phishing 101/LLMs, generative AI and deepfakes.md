@@ -73,6 +73,7 @@ As a pentester, these technologies **complement rather than replace** traditiona
 > - Cloned voices can degrade over low-quality phone/VoIP compression, exposing artifacts.
 > - Deepfake video still shows tells under close scrutiny (lighting mismatches, lip-sync drift) — don't assume it's undetectable.
 > - **Scope check**: impersonating a real, named individual's voice or likeness is a bigger ask than standard phishing — confirm it's explicitly authorized in the Rules of Engagement before using it (see [[Phishing Basics/_index|module overview]]).
+> - Mainstream LLM providers commonly refuse requests that explicitly name themselves as phishing/social-engineering content — see [[Creating a Zoom credential phishing pretext]] for a worked example of framing a prompt to avoid that refusal, and a locally-hosted/uncensored model as the fallback.
 
 > [!tip] Beginner note
 > **RAG** = an LLM technique for pulling in outside data (like public OSINT) before generating a response, rather than relying only on what it learned during training. That's what lets an LLM build a pretext from a target's real, current public footprint instead of generic guesses.

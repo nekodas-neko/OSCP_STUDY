@@ -44,6 +44,17 @@ PDF viewers carry the same risk — **Adobe Acrobat Reader** is a frequent targe
 > [!warning] Shelf life is short
 > Once a CVE is public, the enterprise patch cycle closes the window fast. These only work against genuinely unpatched targets — you can't assume they'll land against a random organization.
 
+> [!tip] Finding a working PoC once you have a candidate CVE
+> ```bash
+> searchsploit CVE-2017-11882
+> searchsploit "equation editor"
+> searchsploit -m <edb-id>          # copy a specific exploit-db entry into the current dir
+> ```
+> Inside Metasploit, `search cve:2023-21716` (or the relevant CVE) surfaces any weaponized module. Always test the generated file against an isolated VM running the exact target Office/Reader version before ever using it in an engagement.
+
+> [!danger] The exploit doesn't trigger on the target
+> Two common causes: **architecture mismatch** — a 32-bit Office exploit often won't trigger inside a 64-bit Office install (or vice versa), so confirm target Office bitness during recon rather than assuming. And **AV/EDR flagging the file before it's even opened** — public PoCs and Metasploit-generated files are heavily signatured, so expect to need custom obfuscation for anything beyond a lab.
+
 ## Going targeted: research the actual software stack
 
 For a truly targeted attack, research **what software the target organization actually runs**, then look for vulnerabilities in that specific software. Useful recon sources: job postings, LinkedIn, Glassdoor, the company website, software review sites (G2 Crowd, Capterra), industry forums/blogs, and tech news — this is a direct extension of the OSINT techniques in [[Google Hacking]] and [[Open-Source Code]].

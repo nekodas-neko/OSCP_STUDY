@@ -13,7 +13,7 @@ tags:
 > |-----------|-----------|------------|
 > | Prompt bombing | Spam push prompts until the user approves | Needs push-based MFA |
 > | Real-time relay via phishing site | Capture the token in the fake login flow, replay immediately | Token is short-lived — timing critical, single-use |
-> | Browser-in-the-middle (e.g. cuddlephish) | Proxy the real session live | Needs a public IP — awkward for pure internal/assumed-breach engagements |
+> | Browser-in-the-middle (cuddlephish, evilginx2) | Proxy the real session live | Needs a public IP + valid TLS on a lookalike domain — awkward for pure internal/assumed-breach engagements |
 > | Brute-force | Guess the numeric token | Usually blocked by rate limiting |
 > | Social engineering | Pose as helpdesk/IT, ask for the token | Needs a strong, credible pretext |
 > | SIM swapping (SMS MFA) | Port the number to intercept SMS codes | Not legally viable in standard pentesting |
@@ -39,7 +39,16 @@ Even with valid credentials, **MFA** slows an attacker down. Several ways to wor
 
 **Real-time token relay.** Embed the MFA step directly into the credential-phishing site's own login flow, capturing username, password, *and* MFA token together. The token must be relayed to the real service **immediately** — tokens are short-lived, so timing is critical. This only grants single-use access, but is effective when planned precisely.
 
-**Browser-in-the-middle (BitM).** Proxy the target's real, live session — they're genuinely interacting with the legitimate site, but the resulting authenticated session (including the MFA token) belongs to the attacker's proxy. Tools like **cuddlephish** automate this. Requires a **public IP** and isn't easily run purely internally — a real constraint on assumed-breach engagements aiming at internal-only web apps.
+**Browser-in-the-middle (BitM).** Proxy the target's real, live session — they're genuinely interacting with the legitimate site, but the resulting authenticated session (including the MFA token) belongs to the attacker's proxy. Tools like **cuddlephish** automate this; **evilginx2** is the more widely used equivalent for AiTM/BitM phishing:
+```bash
+git clone https://github.com/kgretzky/evilginx2
+cd evilginx2 && make
+sudo ./evilginx2 -p ./phishlets
+```
+Requires a **public IP** and isn't easily run purely internally — a real constraint on assumed-breach engagements aiming at internal-only web apps.
+
+> [!danger] BitM proxy captures a session that doesn't actually work
+> Session cookies are commonly scoped `Secure`, and sometimes `SameSite=Strict` — a self-signed cert, or a proxy domain that doesn't closely resemble the real one, can make the browser reject the cookie outright or the captured session fail server-side validation. A real (or Let's Encrypt-issued) certificate on a convincing lookalike domain is close to mandatory for BitM to work reliably, on top of the public IP requirement above.
 
 **Brute-forcing the token.** In theory possible (most tokens are 6 digits), but rate limiting and short response windows usually make this impractical.
 
@@ -62,6 +71,7 @@ Even with valid credentials, **MFA** slows an attacker down. Several ways to wor
 
 ## Resources
 - [cuddlephish (GitHub)](https://github.com/fkasler/cuddlephish)
+- [evilginx2 (GitHub)](https://github.com/kgretzky/evilginx2)
 - [Lapsus$ MFA fatigue reporting — Microsoft](https://www.microsoft.com/en-us/security/blog/)
 
 ---

