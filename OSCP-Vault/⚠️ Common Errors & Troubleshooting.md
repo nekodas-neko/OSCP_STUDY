@@ -21,6 +21,7 @@ flowchart TD
     B -->|Web / brute force| F["gobuster<br/>wordlist / status filter"]
     B -->|Shell issues| G["Shells<br/>listener / LHOST / TTY"]
     B -->|Cannot download| H["File transfer<br/>curl / chmod / writable dir"]
+    B -->|Address already in use| I["Ports / processes<br/>lsof / kill / fuser"]
 ```
 
 ---
@@ -104,6 +105,21 @@ flowchart TD
 
 > [!warning] HTTPS site: `tls: failed to verify certificate`
 > Add `-k` (gobuster/curl) to ignore the self-signed cert.
+
+---
+
+## 🔌 Ports / processes on Kali
+
+> [!danger] `OSError: [Errno 98] Address already in use`
+> **Cause:** Something is already bound to that port — usually a server you started earlier and forgot to close (or a second tool trying to use the same port).
+> **Fix — find and kill it:**
+> ```bash
+> sudo lsof -i :80                # shows PID + process name on port 80
+> sudo ss -tlnp | grep :80        # alternative, same info
+> sudo kill <PID>                 # kill by PID once found
+> sudo fuser -k 80/tcp            # or kill whatever's on the port in one shot
+> ```
+> **Common trigger:** running WsgiDAV (`--port=80`) *and* a Python web server (`python3 -m http.server 80`) at the same time for a Windows library-files attack (see [[Obtaining code execution via Windows library files]]) — both default to port 80. Keep them on separate ports, e.g. WsgiDAV on `80`, the payload server on `8000`, and point the `.lnk`'s download cradle at `:8000` to match.
 
 ---
 
