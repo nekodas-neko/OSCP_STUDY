@@ -216,7 +216,12 @@ PS C:\Windows\System32\WindowsPowerShell\v1.0>
 
 ## Lab question answers
 
-**"Is the `.lnk` file tagged with the Mark of the Web when you execute it in Explorer by double-clicking the Windows library file?"** → **False.** MOTW is applied when a file is downloaded from the Internet zone (e.g. via a browser or email client, which stamps a `Zone.Identifier` alternate data stream). Here, the `.lnk` is reached through a WebDAV connection that Windows treats as a **network location** (`\\<ip>\DavWWWRoot`), not an internet download — so no MOTW gets applied, and the `.lnk` never hits Protected View or a SmartScreen-style warning. This is precisely what makes the two-stage library-file approach more dangerous than a direct download link: the payload never passes through the code path that tags files as internet-sourced in the first place.
+**"Is the `.lnk` file tagged with the Mark of the Web when you execute it in Explorer by double-clicking the Windows library file?"** → **True** — confirmed hands-on. Even though the connection resolves to a `\\<ip>\DavWWWRoot` UNC-style path, Windows' **URL security zone mapping** still classifies a WebDAV host reached over plain HTTP as the **Internet zone** by default (it isn't in Trusted/Local Intranet zones), so the `.lnk` picked up from that share still gets a `Zone.Identifier` alternate data stream — MOTW is applied.
+
+> [!info] MOTW being present ≠ the attack being blocked
+> The reason this technique still works despite MOTW landing on the `.lnk`: **Windows doesn't gate `.lnk` execution behind MOTW** the way it gates Office macros (Protected View) or downloaded `.exe`/installer files (SmartScreen prompt). Double-clicking a MOTW-tagged shortcut just runs whatever it points to — no extra warning dialog in the way. So the real value of this vector isn't "it evades MOTW entirely" (it doesn't) — it's that `.lnk`/library files fall into file-type categories Windows doesn't bother gatekeeping on MOTW in the first place, unlike the Office macro vector where MOTW directly triggers Protected View.
+>
+> Verify it yourself: right-click the `.lnk` inside the opened library folder → Properties (no Unblock checkbox shown for this file type), or check from PowerShell: `Get-Item <path> -Stream Zone.Identifier` — the stream is present even though Explorer's UI doesn't surface it the same way it does for a downloaded document.
 
 > [!info] Hands-on labs
 > The HR137 foothold, the "is the `.lnk` MOTW-tagged" true/false question, and the ADMIN capstone all require running the exercise against your own live lab instance — answers/flags are unique to your environment.
