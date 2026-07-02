@@ -28,7 +28,22 @@ Phishing blends technical delivery with social manipulation. Two flavors:
 - 📁 [[Phishing Basics/Hands-on credential phishing/_index|Hands-on credential phishing]] — clone a site, capture creds, send the mail
 
 ## Wrapping up
-<!-- 11.4 summary goes here once the section is written -->
+
+Phishing is as much an art as a technical exercise — it takes a solid read on human behavior, meticulous research, and precise execution. From crafting a convincing pretext to leveraging Gen AI and deepfakes, the attacker's toolkit keeps expanding, but the core loop stays the same:
+
+```mermaid
+flowchart LR
+    A["Leaked mailbox access"] --> B["Read Sent folder for tone"]
+    B --> C["LLM extends the pretext"]
+    C --> D["Clone target's login page"]
+    D --> E["Patch in a working fake login flow"]
+    E --> F["Stand up a credential capture server"]
+    F --> G["Reply-to-thread delivery"]
+    G --> H["Victim clicks + submits credentials"]
+    H --> I["Credentials captured<br/>→ next phase of the campaign"]
+```
+
+Building and running this chain end-to-end (see [[Phishing Basics/Hands-on credential phishing/_index|Hands-on credential phishing]]) is a practical foundation for anticipating, leveraging, and countering these threats — not just recognizing them in theory.
 
 ## Related Sections
 - [[Passive Information Gathering/_index|Passive Information Gathering]] — OSINT to craft the pretext
