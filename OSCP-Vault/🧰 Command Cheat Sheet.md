@@ -59,6 +59,14 @@ flowchart TD
 > dig axfr @$IP <domain>                # DNS zone transfer
 > ```
 
+> [!example] Remote Desktop (RDP)
+> ```bash
+> xfreerdp /v:$IP /u:<user> /p:<pass>              # standard connection
+> xfreerdp /v:$IP /u:<user> /p:<pass> /cert:ignore  # skip cert warnings
+> rdesktop $IP -u <user> -p <pass>                  # older alternative
+> ```
+> 🔗 `rdesktop` often **fails** against a non-domain-joined Windows target with NLA enabled (the default on Windows 11) — use `xfreerdp` instead, it handles that combination correctly.
+
 ---
 
 ## 🐚 2. Reverse Shells (getting a shell back)
