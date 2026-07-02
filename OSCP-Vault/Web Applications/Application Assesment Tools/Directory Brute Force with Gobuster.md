@@ -13,6 +13,7 @@ tags:
 > |------|---------|
 > | Dir brute force | `gobuster dir -u http://<IP>/ -w /usr/share/seclists/Discovery/Web-Content/common.txt` |
 > | With extensions | `gobuster dir -u http://<IP>/ -w common.txt -x php,txt,html,bak` |
+> | Find documents by type (e.g. PDFs) | `gobuster dir -u http://<IP>/ -w common.txt -x pdf` |
 > | Vhost fuzzing | `gobuster vhost -u http://<domain>/ -w subdomains.txt --append-domain` |
 > | DNS subdomains | `gobuster dns -d <domain> -w subdomains.txt` |
 > | With auth | `gobuster dir -u http://<IP>/ -w common.txt -U admin -P password` |
@@ -66,6 +67,24 @@ flowchart TD
 
 > [!tip] Beginner note
 > **Directory brute forcing** guesses hidden pages and folders from a wordlist, one request per word. Most web wins start by finding an unlinked page like `/admin` or `/backup` that the site never links to.
+
+## Finding documents for metadata OSINT
+
+`-x` isn't just for web shells and backup files — filtering to a document type (`pdf`, `docx`, `xlsx`) turns gobuster into a **document-discovery tool** for client-side recon:
+
+```bash
+gobuster dir -u http://<IP>/ -w /usr/share/wordlists/dirb/common.txt -x pdf
+```
+
+If a common wordlist doesn't surface anything, step up to a filename-focused list:
+```bash
+gobuster dir -u http://<IP>/ -w /usr/share/seclists/Discovery/Web-Content/raft-medium-files.txt -x pdf
+```
+
+Any PDF this finds is a candidate for `exiftool` — check every field, not just Author/Producer, since useful data (or a lab flag) can hide in `Keywords`, `Comment`, or `Subject`. See [[Information gathering]] for the full metadata-analysis workflow this feeds into.
+
+> [!warning] This is the noisy alternative
+> Unlike a `site:target.com filetype:pdf` Google dork, this sends real requests straight to the target and shows up in their logs. Use it when a document isn't linked anywhere Google could have indexed it — otherwise, dork first.
 
 ## Resources
 - [HackTricks — Web Fuzzing](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web#directories-and-files)
