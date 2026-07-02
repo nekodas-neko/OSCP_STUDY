@@ -20,7 +20,7 @@ tags:
 | 🔍 Recon | [[Passive Information Gathering/_index\|Passive]] · [[Active Information Gathering/_index\|Active]] |
 | 🌐 Web | [[Web Applications/_index\|Web Apps]] · [[SQL Injection Attacks/_index\|SQLi]] |
 | 🔎 Vuln Scan | [[Vulnerability Scanning/_index\|Nessus / Nmap]] |
-| 🎣 Initial Access | [[Phishing Basics/_index\|Phishing]] |
+| 🎣 Initial Access | [[Phishing Basics/_index\|Phishing]] · [[Client-Side Attacks/_index\|Client-Side]] |
 | 📝 Report | [[Report Writing]] |
 
 ## Attack Flow (master map)
