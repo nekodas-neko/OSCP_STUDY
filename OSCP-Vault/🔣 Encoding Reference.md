@@ -85,7 +85,7 @@ When the server decodes **once**, encode **twice**. The `%` itself becomes `%25`
 ## 🧱 Filter Bypass Cheats by attack
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Payload blocked?] --> B{Which attack?}
     B -->|Traversal| C["URL-encode dots %2e<br/>double-encode %252e<br/>....// (nested)"]
     B -->|SQLi| D["Comments /**/ instead of space<br/>Case: SeLeCt<br/>URL-encode quote %27"]
