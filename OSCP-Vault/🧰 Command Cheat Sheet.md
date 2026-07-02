@@ -17,7 +17,7 @@ tags:
 > ```
 
 ```mermaid
-flowchart LR
+flowchart TD
     S1["1. Scan & Enum"] --> S2["2. Reverse Shells"]
     S2 --> S3["3. Payloads<br/>msfvenom"]
     S3 --> S4["4. File Transfer"]

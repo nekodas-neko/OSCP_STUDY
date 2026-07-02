@@ -32,7 +32,7 @@ Phishing blends technical delivery with social manipulation. Two flavors:
 Phishing is as much an art as a technical exercise — it takes a solid read on human behavior, meticulous research, and precise execution. From crafting a convincing pretext to leveraging Gen AI and deepfakes, the attacker's toolkit keeps expanding, but the core loop stays the same:
 
 ```mermaid
-flowchart LR
+flowchart TD
     A["Leaked mailbox access"] --> B["Read Sent folder for tone"]
     B --> C["LLM extends the pretext"]
     C --> D["Clone target's login page"]
