@@ -221,7 +221,18 @@ PS C:\Windows\System32\WindowsPowerShell\v1.0>
 > [!info] MOTW being present ≠ the attack being blocked
 > The reason this technique still works despite MOTW landing on the `.lnk`: **Windows doesn't gate `.lnk` execution behind MOTW** the way it gates Office macros (Protected View) or downloaded `.exe`/installer files (SmartScreen prompt). Double-clicking a MOTW-tagged shortcut just runs whatever it points to — no extra warning dialog in the way. So the real value of this vector isn't "it evades MOTW entirely" (it doesn't) — it's that `.lnk`/library files fall into file-type categories Windows doesn't bother gatekeeping on MOTW in the first place, unlike the Office macro vector where MOTW directly triggers Protected View.
 >
-> Verify it yourself: right-click the `.lnk` inside the opened library folder → Properties (no Unblock checkbox shown for this file type), or check from PowerShell: `Get-Item <path> -Stream Zone.Identifier` — the stream is present even though Explorer's UI doesn't surface it the same way it does for a downloaded document.
+> Verify it yourself: right-click the `.lnk` inside the opened library folder → Properties (no Unblock checkbox shown for this file type — the UI doesn't surface MOTW for shortcuts the way it does for documents).
+
+> [!warning] Querying the stream directly over the WebDAV UNC path fails
+> ```powershell
+> Get-Item -Path "\\<kali-ip>\DavWWWRoot\automatic_configuration.lnk" -Stream Zone.Identifier
+> # Get-Item : Insufficient system resources exist to complete the requested service
+> ```
+> This isn't "no MOTW" — it's the **WebClient/WebDAV redirector** rejecting the stream-enumeration request entirely; querying NTFS alternate data streams isn't supported over that protocol. To actually see the stream, copy the file out to a real local NTFS path **using Explorer's UI** (drag-and-drop or right-click Copy/Paste — `Copy-Item` in PowerShell skips ADS by default and won't carry it over) and check the local copy instead:
+> ```powershell
+> Get-Item -Path "C:\Users\offsec\Desktop\automatic_configuration.lnk" -Stream Zone.Identifier
+> ```
+> This mirrors what Windows actually does to execute a WebDAV-hosted file anyway — cache it locally first — and that local, Explorer-copied version is where the `Zone.Identifier` stream (MOTW) shows up.
 
 > [!info] Hands-on labs
 > The HR137 foothold, the "is the `.lnk` MOTW-tagged" true/false question, and the ADMIN capstone all require running the exercise against your own live lab instance — answers/flags are unique to your environment.
